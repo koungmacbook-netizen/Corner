@@ -1,0 +1,1306 @@
+<!doctype html>
+<html lang="lo">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>ລະບົບນັບສະຕັອກ · Potato Corner Mega Mall</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Lao:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#faf6ee;--card:#fff;--head:#f4ecdc;--ink:#2a2018;--muted:#7b6c5c;--line:#e9dfcd;
+  --accent:#c2410c;--accent-ink:#fff;--accent-soft:#fdeadc;--gold:#e8a317;
+  --ok:#2b8a3e;--ok-soft:#e3f4e6;--warn:#b45309;--warn-soft:#fdf0d5;--bad:#c92a2a;--bad-soft:#fde4e4;
+  --shadow:0 1px 2px rgba(60,40,10,.06),0 4px 14px rgba(60,40,10,.06);
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#171310;--card:#221c16;--head:#2c241b;--ink:#f4ece0;--muted:#a8998a;--line:#3a3025;
+    --accent:#f08a4b;--accent-ink:#1b1209;--accent-soft:#3a2a1d;--gold:#f0b73e;
+    --ok:#6fcf84;--ok-soft:#1f3326;--warn:#f0b35b;--warn-soft:#3a2d17;--bad:#ff8787;--bad-soft:#3d2020;
+    --shadow:none;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#171310;--card:#221c16;--head:#2c241b;--ink:#f4ece0;--muted:#a8998a;--line:#3a3025;
+  --accent:#f08a4b;--accent-ink:#1b1209;--accent-soft:#3a2a1d;--gold:#f0b73e;
+  --ok:#6fcf84;--ok-soft:#1f3326;--warn:#f0b35b;--warn-soft:#3a2d17;--bad:#ff8787;--bad-soft:#3d2020;--shadow:none;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font-family:'Noto Sans Lao','Noto Sans Lao Looped','Phetsarath OT','Saysettha OT','Leelawadee UI','Lao UI',system-ui,-apple-system,'Segoe UI',sans-serif;
+  font-size:15px;line-height:1.55}
+button,input,select,textarea{font:inherit;color:inherit}
+h1,h2,h3{margin:0;line-height:1.3}
+.wrap{max-width:1280px;margin:0 auto;padding:0 16px}
+
+/* header */
+.top{background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:30}
+.top .wrap{display:flex;gap:12px;align-items:center;padding-top:10px;padding-bottom:10px;flex-wrap:wrap}
+.brand{display:flex;gap:10px;align-items:center;min-width:0;flex:1 1 220px}
+.brand svg{flex:none}
+.brand b{display:block;font-size:16px;font-weight:700;line-height:1.25}
+.brand small{color:var(--muted);font-size:12px;display:block}
+.weekbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.weekbar select{max-width:260px}
+.save-ind{font-size:12px;color:var(--muted);white-space:nowrap}
+.save-ind.err{color:var(--bad)}
+.tabs{border-top:1px solid var(--line);background:var(--card)}
+.tabs .wrap{display:flex;flex-wrap:nowrap;gap:4px;overflow-x:auto;padding-top:6px;padding-bottom:6px;scrollbar-width:none}
+.tabs .wrap::-webkit-scrollbar{display:none}
+.tab{border:0;background:transparent;padding:8px 14px;border-radius:999px;cursor:pointer;white-space:nowrap;color:var(--muted);font-weight:500}
+.tab:hover{background:var(--head)}
+.tab.on{background:var(--accent);color:var(--accent-ink)}
+.tab .dot{display:inline-block;min-width:18px;height:18px;border-radius:9px;background:var(--bad);color:#fff;font-size:11px;line-height:18px;text-align:center;margin-left:6px;padding:0 5px}
+
+main{padding:18px 0 80px}
+.view-title{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.view-title h2{font-size:20px}
+.view-title p{margin:2px 0 0;color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+
+/* controls */
+.btn{border:1px solid var(--line);background:var(--card);padding:8px 14px;border-radius:10px;cursor:pointer;font-weight:500;min-height:40px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.06)}
+.btn.danger{color:var(--bad);border-color:var(--bad-soft)}
+.btn.sm{padding:4px 10px;min-height:32px;font-size:13px;border-radius:8px}
+.btn.ghost{background:transparent}
+input[type=text],input[type=number],input[type=date],select,textarea{border:1px solid var(--line);background:var(--card);border-radius:10px;padding:8px 10px;min-height:40px;width:100%}
+select{width:auto}
+input:focus,select:focus,textarea:focus,.btn:focus-visible,.tab:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+label.f{display:block;font-size:13px;color:var(--muted);margin-bottom:4px}
+.row{display:grid;gap:12px}
+.cols2{grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+
+/* cards */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.card h3{font-size:15px;margin-bottom:10px}
+.grid{display:grid;gap:14px}
+.kpis{grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+.kpi .lbl{font-size:13px;color:var(--muted)}
+.kpi .val{font-size:24px;font-weight:700;margin-top:2px;letter-spacing:-.01em;font-variant-numeric:tabular-nums}
+.kpi .sub{font-size:12.5px;color:var(--muted);margin-top:2px}
+.two{grid-template-columns:repeat(auto-fit,minmax(340px,1fr))}
+.bar{height:8px;background:var(--head);border-radius:6px;overflow:hidden}
+.bar>i{display:block;height:100%;background:var(--accent);border-radius:6px;transition:width .25s}
+.bar.ok>i{background:var(--ok)}
+.chip{display:inline-flex;align-items:center;border-radius:999px;padding:2px 10px;font-size:12px;background:var(--head);color:var(--muted);white-space:nowrap}
+.chip.ok{background:var(--ok-soft);color:var(--ok)}
+.chip.warn{background:var(--warn-soft);color:var(--warn)}
+.chip.bad{background:var(--bad-soft);color:var(--bad)}
+.banner{border-radius:12px;padding:10px 14px;margin-bottom:14px;font-size:14px;display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.banner.warn{background:var(--warn-soft);color:var(--warn)}
+.banner.bad{background:var(--bad-soft);color:var(--bad)}
+.banner.info{background:var(--accent-soft);color:var(--accent)}
+.muted{color:var(--muted)}
+.num{font-variant-numeric:tabular-nums}
+.neg{color:var(--bad);font-weight:600}
+.todo-list{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+.todo-list li{display:flex;gap:10px;justify-content:space-between;align-items:center;padding:10px 12px;border:1px solid var(--line);border-radius:12px;flex-wrap:wrap}
+.todo-list .st{display:flex;gap:10px;align-items:center}
+.tick{width:22px;height:22px;border-radius:50%;border:2px solid var(--line);display:inline-grid;place-items:center;font-size:13px;flex:none}
+.tick.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.tick.bad{border-color:var(--warn);color:var(--warn)}
+
+/* tables */
+.tbl-wrap{overflow:auto;border:1px solid var(--line);border-radius:12px;background:var(--card);margin-bottom:16px;-webkit-overflow-scrolling:touch}
+table.sheet,table.plain{border-collapse:separate;border-spacing:0;width:100%;font-size:13.5px}
+.sheet th,.sheet td,.plain th,.plain td{padding:6px 9px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:right}
+.sheet th,.plain th{background:var(--head);font-weight:600;text-align:center;font-size:12.5px;color:var(--muted)}
+.sheet thead th{position:sticky;top:0;z-index:2}
+.sheet td.name,.sheet th.name{position:sticky;left:0;z-index:1;text-align:left;min-width:200px;background:var(--card);border-right:1px solid var(--line)}
+.sheet thead th.name{background:var(--head);z-index:3}
+.sheet td.unit{text-align:left;color:var(--muted);font-size:12.5px}
+.sheet tr.cat td{background:var(--head);font-weight:700;text-align:left;color:var(--ink)}
+.sheet tr.tot td{font-weight:700;background:var(--head)}
+.sheet td.name small{display:block;color:var(--muted);font-weight:400;font-size:11.5px}
+.plain td:first-child,.plain th:first-child{text-align:left}
+.plain tr.tot td{font-weight:700;background:var(--head)}
+input.cell{width:76px;text-align:right;border:1px solid transparent;background:transparent;border-radius:6px;padding:3px 6px;min-height:30px;font-variant-numeric:tabular-nums}
+input.cell:hover{border-color:var(--line)}
+input.cell:focus{border-color:var(--accent);background:var(--card)}
+input.cell.auto{color:var(--muted);font-style:italic}
+input.cell.wide{width:104px}
+input.txt{border:1px solid transparent;background:transparent;padding:3px 6px;min-height:30px;border-radius:6px;width:100%}
+input.txt:hover{border-color:var(--line)}
+input.txt:focus{border-color:var(--accent);background:var(--card)}
+.sheet td.out-cell.flag{background:var(--bad-soft)}
+.sheet td.done-cell{background:var(--ok-soft)}
+
+/* count mode */
+.count-bar{position:sticky;top:var(--hdr,112px);z-index:10;background:var(--bg);padding:8px 0 10px}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.pill{border:1px solid var(--line);background:var(--card);padding:5px 12px;border-radius:999px;cursor:pointer;font-size:13.5px}
+.pill.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.cc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
+.cc{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:12px;padding:12px 14px;display:grid;gap:8px}
+.cc.done{border-left-color:var(--ok)}
+.cc.todo{border-left-color:var(--gold)}
+.cc.neg{border-left-color:var(--bad);background:var(--bad-soft)}
+.cc .hd{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.cc .hd b{font-weight:600}
+.cc .meta{font-size:12.5px;color:var(--muted)}
+.cc .meta b{color:var(--ink)}
+.stepper{display:grid;grid-template-columns:44px 1fr 44px;gap:6px}
+.stepper button{border:1px solid var(--line);background:var(--head);border-radius:10px;font-size:22px;cursor:pointer;min-height:46px;line-height:1}
+.stepper button:active{transform:scale(.96)}
+.stepper input{text-align:center;font-size:20px;font-weight:600;min-height:46px;font-variant-numeric:tabular-nums}
+.cc .res{display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px}
+
+/* modal / toast */
+#modal{position:fixed;inset:0;background:rgba(20,12,4,.5);display:none;align-items:center;justify-content:center;z-index:100;padding:12px}
+#modal.open{display:flex}
+#modal .sheetbox{background:var(--card);border-radius:18px;width:min(560px,100%);max-height:92vh;overflow:auto;padding:20px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+#modal h3{font-size:18px;margin-bottom:12px}
+.mfoot{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
+#toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:12px;opacity:0;pointer-events:none;transition:.2s;z-index:120;max-width:90vw;font-size:14px}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+.hint{font-size:12.5px;color:var(--muted)}
+.sp{height:10px}
+.right{text-align:right}
+.hide{display:none!important}
+.sale-line{display:grid;grid-template-columns:1fr 120px 150px 36px;gap:8px;align-items:center;margin-bottom:8px}
+@media(max-width:700px){
+  .top{position:static}
+  .count-bar{top:0}
+  .brand{flex:1 1 100%}
+  .weekbar{flex:1 1 100%;flex-wrap:nowrap}
+  .weekbar select{flex:1 1 0;max-width:none;min-width:0;width:0}
+  .weekbar .btn{flex:none;padding:8px 10px}
+  .kpis{grid-template-columns:1fr 1fr}
+  .kpi .val{font-size:18px}
+  .view-title h2{font-size:18px}
+}
+@media(max-width:640px){
+  .sale-line{grid-template-columns:1fr 1fr;}
+  .sale-line input:first-child{grid-column:1/-1}
+  main{padding-top:12px}
+  .kpi .val{font-size:21px}
+}
+#printArea{display:none}
+@media print{
+  body{background:#fff;color:#000}
+  .top,.tabs,main,#toast,#modal{display:none!important}
+  #printArea{display:block!important;font-size:12px}
+  #printArea table{width:100%;border-collapse:collapse}
+  #printArea th,#printArea td{border:1px solid #444;padding:4px 6px;text-align:left}
+  #printArea td.e{height:26px}
+  #printArea h2{margin:0 0 4px}
+}
+
+#profitSum{overflow-x:auto}
+.plain td,.plain th{white-space:normal}
+.tbl-wrap .plain td,.tbl-wrap .plain th{white-space:nowrap}
+@media(max-width:700px){#themeBtn{display:none}}
+
+.pbreak{page-break-before:always}
+@media print{ #printArea{font-size:12px} #printArea h2{font-size:18px} }
+
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#c2410c"/><g fill="#f6c23e"><rect x="11" y="6" width="4" height="15" rx="1.5" transform="rotate(-8 13 13)"/><rect x="17" y="4" width="4" height="17" rx="1.5"/><rect x="23" y="6" width="4" height="15" rx="1.5" transform="rotate(8 25 13)"/></g><path d="M9 19h22l-3 15a2 2 0 0 1-2 1.6H14a2 2 0 0 1-2-1.6z" fill="#fff"/><rect x="16" y="23" width="8" height="8" rx="2" fill="#c2410c" opacity=".85"/></svg>
+      <div><b>ລະບົບນັບສະຕັອກ & ອິນເວັນໂຕຣີ</b><small id="branchName"></small></div>
+    </div>
+    <div class="weekbar">
+      <select id="weekSel" aria-label="ເລືອກອາທິດ"></select>
+      <button class="btn" data-act="newWeek">+ ອາທິດໃໝ່</button>
+      <button class="btn ghost" id="themeBtn" title="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ" aria-label="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ">◐</button>
+    </div>
+    <span class="save-ind" id="saveInd"></span>
+  </div>
+  <nav class="tabs"><div class="wrap" id="tabs"></div></nav>
+</header>
+<main><div class="wrap" id="view"></div></main>
+<div id="modal"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<div id="printArea"></div>
+<script>
+'use strict';
+/* ============ ຂໍ້ມູນຕັ້ງຕົ້ນ (ຈາກໄຟລ໌ Excel INVENTORY NOVEMBER) ============ */
+const SEED = {"items":[{"id":"i1","cat":"food","name":"Fries","unit":"KG","price":45064,"pack":null,"min":null,"active":true},{"id":"i2","cat":"food","name":"Chicken pop","unit":"KG","price":147400,"pack":null,"min":null,"active":true},{"id":"i3","cat":"food","name":"Loopy","unit":"KG","price":129074.07,"pack":null,"min":null,"active":true},{"id":"i4","cat":"food","name":"Oil","unit":"CAN","price":694300,"pack":null,"min":null,"active":true},{"id":"i5","cat":"season","name":"BARBEQUE","unit":"BAG (220 G)","price":28483.87,"pack":null,"min":null,"active":true},{"id":"i6","cat":"season","name":"SOUR CREAM","unit":"BAG (220 G)","price":31258.95,"pack":null,"min":null,"active":true},{"id":"i7","cat":"season","name":"CHILLI BARBEQUE","unit":"BAG (220 G)","price":28274.43,"pack":null,"min":null,"active":true},{"id":"i8","cat":"season","name":"CHEESE","unit":"BAG (220 G)","price":48590.13,"pack":null,"min":null,"active":true},{"id":"i9","cat":"season","name":"SWEET CORN","unit":"BAG (220 G)","price":31468.39,"pack":null,"min":null,"active":true},{"id":"i10","cat":"season","name":"TOMYUM","unit":"BAG (220 G)","price":51191.588,"pack":null,"min":null,"active":true},{"id":"i11","cat":"pack","name":"PAPER BOWL LARGE","unit":"PCS 1*50","price":419.04,"pack":50,"min":null,"active":true},{"id":"i12","cat":"pack","name":"PAPER BOWL JUMBO","unit":"PCS 1*50","price":479.52,"pack":50,"min":null,"active":true},{"id":"i13","cat":"pack","name":"PAPER BOWL MEGA","unit":"PCS 1*50","price":626.4,"pack":50,"min":null,"active":true},{"id":"i14","cat":"pack","name":"PAPER BOWL GIGA","unit":"PCS 1*50","price":937.44,"pack":50,"min":null,"active":true},{"id":"i15","cat":"pack","name":"PAPER BOWL TERA","unit":"PCS 1*50","price":1382.4,"pack":50,"min":null,"active":true},{"id":"i16","cat":"pack","name":"KRAFT PAPER BAG#2","unit":"PCS 1*100","price":138.24,"pack":100,"min":null,"active":true},{"id":"i17","cat":"pack","name":"KRAFT PAPER BAG#4","unit":"PCS 1*100","price":179.28,"pack":100,"min":null,"active":true},{"id":"i18","cat":"pack","name":"KRAFT PAPER BAG#9","unit":"PCS 1*100","price":356.4,"pack":100,"min":null,"active":true},{"id":"i19","cat":"pack","name":"12Oz PAPER CUP","unit":"PCS 1*100","price":270,"pack":100,"min":null,"active":true},{"id":"i20","cat":"pack","name":"12Oz PAPER LID","unit":"PCS 1*100","price":209.52,"pack":100,"min":null,"active":true},{"id":"i21","cat":"pack","name":"16Oz PAPER CUP","unit":"PCS 1*100","price":419.04,"pack":100,"min":null,"active":true},{"id":"i22","cat":"pack","name":"16Oz PAPER LID","unit":"PCS 1*100","price":231.12,"pack":100,"min":null,"active":true},{"id":"i23","cat":"pack","name":"GREASEPROOF PAPER 8x8Cm","unit":"KG","price":40000,"pack":null,"min":null,"active":true},{"id":"i24","cat":"pack","name":"GREASEPROOF PAPER 10x10Cm","unit":"KG","price":45000,"pack":null,"min":null,"active":true},{"id":"i25","cat":"pack","name":"SKEWER / FRUIT PICK","unit":"PCS 1*100","price":11000,"pack":100,"min":null,"active":true},{"id":"i26","cat":"bev","name":"COKE","unit":"CAN 1*12","price":8750,"pack":12,"min":null,"active":true},{"id":"i27","cat":"bev","name":"COKE ZERO SUGER","unit":"CAN 1*12","price":8750,"pack":12,"min":null,"active":true},{"id":"i28","cat":"bev","name":"FANTA","unit":"CAN 1*12","price":8750,"pack":12,"min":null,"active":true},{"id":"i29","cat":"bev","name":"SPRITE","unit":"CAN 1*12","price":8750,"pack":12,"min":null,"active":true},{"id":"i30","cat":"bev","name":"COKE 1250L","unit":"BOTTLE*6","price":15909,"pack":6,"min":null,"active":true},{"id":"i31","cat":"bev","name":"COKE POST-MIX","unit":"1BOX*20","price":980000,"pack":null,"min":null,"active":true},{"id":"i32","cat":"bev","name":"FANTA STRAWBERRY POST-MIX","unit":"1BOX*10L","price":570000,"pack":null,"min":null,"active":true},{"id":"i33","cat":"bev","name":"SPRITE POST-MIX","unit":"1BOX*10L","price":570000,"pack":null,"min":null,"active":true},{"id":"i34","cat":"bev","name":"CO2","unit":"9KG","price":290000,"pack":null,"min":null,"active":true},{"id":"i35","cat":"utensil","name":"Vila Tissue Hand Towel 230x230mm","unit":"PACK","price":17225,"pack":null,"min":null,"active":true},{"id":"i36","cat":"utensil","name":"ARO Tissue Paper 33*33Cm","unit":"1BOX*8PACK","price":33279.875,"pack":null,"min":null,"active":true},{"id":"i37","cat":"utensil","name":"Black Garbage Bag Size 30*40","unit":"PACK *1KG","price":28489,"pack":null,"min":null,"active":true},{"id":"i38","cat":"utensil","name":"PLASTIC STAW","unit":"PACK","price":21510.2,"pack":null,"min":null,"active":true},{"id":"i39","cat":"utensil","name":"Hairnets","unit":"PACK *50PCS","price":79871,"pack":null,"min":null,"active":true},{"id":"i40","cat":"utensil","name":"Black Latex Gloves size L","unit":"PACK *100PCS","price":117274.05,"pack":null,"min":null,"active":true},{"id":"i41","cat":"utensil","name":"Black Latex Gloves size M","unit":"PACK *100PCS","price":123797.4,"pack":null,"min":null,"active":true},{"id":"i42","cat":"utensil","name":"Poly-brite Extra Thin (food safe) size s","unit":"PACK*100PCS","price":168000,"pack":null,"min":null,"active":true},{"id":"i43","cat":"utensil","name":"Glove For Cleaning Oven","unit":"PACK","price":20000,"pack":null,"min":null,"active":true},{"id":"i44","cat":"utensil","name":"Therminal Paper Rolls 80*80","unit":"PACK *2ROLL","price":17000,"pack":null,"min":null,"active":true},{"id":"i45","cat":"utensil","name":"Therminal Paper Rolls 57*40","unit":"PACK*10ROLL","price":6800,"pack":null,"min":null,"active":true},{"id":"i46","cat":"utensil","name":"Panasonic Battery Alkaline AA","unit":"PAIR","price":42606.92,"pack":null,"min":null,"active":true},{"id":"i47","cat":"utensil","name":"Black Garbage Bag Size 36*45","unit":"PACK*1Kg","price":27923.62,"pack":null,"min":null,"active":true},{"id":"i48","cat":"utensil","name":"NanoProMask 4 layer","unit":"BOX*5PACK","price":59314,"pack":null,"min":null,"active":true},{"id":"i49","cat":"utensil","name":"3M ScotchBrite 3.5''*6 DishSpong","unit":"PACK*10PCS","price":12368.6,"pack":null,"min":null,"active":true},{"id":"i50","cat":"clean","name":"KLEENCARE 3.8LT","unit":"GAL 3.8LT","price":527680,"pack":null,"min":null,"active":true},{"id":"i51","cat":"clean","name":"CLICK 10 10LT","unit":"GAL 3.8LT","price":1400000,"pack":null,"min":null,"active":true},{"id":"i52","cat":"clean","name":"S-PERKLENE 3.8LT","unit":"GAL 3.8LT","price":569250,"pack":null,"min":null,"active":true},{"id":"i53","cat":"clean","name":"S-PERDRY 3.8LT","unit":"GAL 3.8LT","price":931500,"pack":null,"min":null,"active":true},{"id":"i54","cat":"clean","name":"OASIS","unit":"GAL 3.8LT","price":517500,"pack":null,"min":null,"active":true},{"id":"i55","cat":"clean","name":"NOVAKLENE 10LT","unit":"GAL 3.8LT","price":910800,"pack":null,"min":null,"active":true},{"id":"i56","cat":"clean","name":"Scoth Brite Sponge","unit":"pcs","price":0,"pack":null,"min":null,"active":true},{"id":"i57","cat":"clean","name":"GRILLKLENE3.8LT","unit":"GAL 3.8LT","price":535612.5,"pack":null,"min":null,"active":true},{"id":"i58","cat":"clean","name":"Microfiber (centiped)Gray","unit":"40*40 cm","price":41400,"pack":null,"min":null,"active":true},{"id":"i59","cat":"clean","name":"Microfiber (centiped)Brown","unit":"40*40 cm","price":41400,"pack":null,"min":null,"active":true},{"id":"i60","cat":"clean","name":"Microfiber (centiped) dark blue","unit":"40*40 cm","price":41400,"pack":null,"min":null,"active":true},{"id":"i61","cat":"clean","name":"Microfiber Cloth Blue ( ເຊັດແວ່ນ)","unit":"40*40 cm","price":41400,"pack":null,"min":null,"active":true},{"id":"i62","cat":"clean","name":"LIME KLENE 3.8LT","unit":"GAL 3.8LT","price":0,"pack":null,"min":null,"active":true}],"weeks":[{"id":"w1","start":"2026-11-01","days":2,"by":"MS DAOLEE","locked":false,"rows":{"i1":{"begin":134.1,"tfIn":null,"d":[null,102],"tfOut":null,"end":127,"price":45064},"i2":{"begin":28,"tfIn":null,"d":[null,100],"tfOut":null,"end":118,"price":147400},"i3":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":129074.07},"i4":{"begin":3,"tfIn":null,"d":[],"tfOut":null,"end":1,"price":694300},"i5":{"begin":215,"tfIn":null,"d":[],"tfOut":null,"end":184,"price":28483.87},"i6":{"begin":78,"tfIn":null,"d":[],"tfOut":null,"end":75,"price":31258.95},"i7":{"begin":34,"tfIn":null,"d":[],"tfOut":null,"end":30,"price":28274.43},"i8":{"begin":52,"tfIn":null,"d":[],"tfOut":null,"end":50,"price":48590.13},"i9":{"begin":100,"tfIn":null,"d":[],"tfOut":null,"end":86,"price":31468.39},"i10":{"begin":41,"tfIn":null,"d":[],"tfOut":null,"end":41,"price":51191.588},"i11":{"begin":1548,"tfIn":null,"d":[],"tfOut":null,"end":1381,"price":419.04},"i12":{"begin":4757,"tfIn":null,"d":[],"tfOut":null,"end":4551,"price":479.52},"i13":{"begin":463,"tfIn":null,"d":[],"tfOut":null,"end":454,"price":626.4},"i14":{"begin":786,"tfIn":null,"d":[],"tfOut":null,"end":643,"price":937.44},"i15":{"begin":153,"tfIn":null,"d":[],"tfOut":null,"end":66,"price":1382.4},"i16":{"begin":2500,"tfIn":null,"d":[],"tfOut":null,"end":2500,"price":138.24},"i17":{"begin":6500,"tfIn":null,"d":[],"tfOut":null,"end":6500,"price":179.28},"i18":{"begin":500,"tfIn":null,"d":[],"tfOut":null,"end":387,"price":356.4},"i19":{"begin":742,"tfIn":null,"d":[],"tfOut":null,"end":709,"price":270},"i20":{"begin":472,"tfIn":null,"d":[],"tfOut":null,"end":400,"price":209.52},"i21":{"begin":1032,"tfIn":null,"d":[],"tfOut":null,"end":1000,"price":419.04},"i22":{"begin":200,"tfIn":null,"d":[],"tfOut":null,"end":200,"price":231.12},"i23":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":2,"price":40000},"i24":{"begin":4,"tfIn":null,"d":[],"tfOut":null,"end":2,"price":45000},"i25":{"begin":15,"tfIn":null,"d":[],"tfOut":null,"end":19,"price":11000},"i26":{"begin":96,"tfIn":null,"d":[],"tfOut":null,"end":91,"price":8750},"i27":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i28":{"begin":74,"tfIn":null,"d":[],"tfOut":null,"end":65,"price":8750},"i29":{"begin":71,"tfIn":null,"d":[],"tfOut":null,"end":72,"price":8750},"i30":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":15909},"i31":{"begin":1.5,"tfIn":null,"d":[],"tfOut":null,"end":1,"price":980000},"i32":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":570000},"i33":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":570000},"i34":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":290000},"i35":{"begin":10,"tfIn":null,"d":[],"tfOut":null,"end":4,"price":17225},"i36":{"begin":7,"tfIn":null,"d":[],"tfOut":null,"end":6,"price":33279.875},"i37":{"begin":1,"tfIn":null,"d":[],"tfOut":null,"end":1,"price":28489},"i38":{"begin":24,"tfIn":null,"d":[],"tfOut":null,"end":23,"price":21510.2},"i39":{"begin":23,"tfIn":null,"d":[],"tfOut":null,"end":23,"price":67794.875},"i40":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":117274.05},"i41":{"begin":7,"tfIn":null,"d":[],"tfOut":null,"end":5,"price":123797.4},"i42":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":168000},"i43":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":20000},"i44":{"begin":29,"tfIn":null,"d":[],"tfOut":null,"end":20,"price":17000},"i45":{"begin":75,"tfIn":null,"d":[],"tfOut":null,"end":75,"price":6800},"i46":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":42606.92},"i47":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":27923.62},"i48":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":59314},"i49":{"begin":8,"tfIn":null,"d":[],"tfOut":null,"end":8,"price":12368.6},"i50":{"begin":0.7,"tfIn":null,"d":[],"tfOut":null,"end":0.7,"price":527680},"i51":{"begin":0.8,"tfIn":null,"d":[],"tfOut":null,"end":0.8,"price":1400000},"i52":{"begin":1,"tfIn":null,"d":[],"tfOut":null,"end":1,"price":569250},"i53":{"begin":1,"tfIn":null,"d":[],"tfOut":null,"end":1,"price":931500},"i54":{"begin":0.9,"tfIn":null,"d":[],"tfOut":null,"end":0.9,"price":517500},"i55":{"begin":0.3,"tfIn":null,"d":[],"tfOut":null,"end":0.3,"price":910800},"i56":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":0},"i57":{"begin":0.9,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":535612},"i58":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":41400},"i59":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":41400},"i60":{"begin":0,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":41400},"i61":{"begin":3,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":41400}},"sales":{"lines":[{"id":"fries","label":"FRIES (ມັນຝຣັ່ງ)","g":"food","amount":71762000},{"id":"chicken","label":"CHICKEN POP (ໄກ່ປັອບ)","g":"food","amount":17680000},{"id":"loopy","label":"LOOPY","g":"food","amount":null},{"id":"combo","label":"COMBO (ຊຸດຄອມໂບ)","g":"food","amount":16270000},{"id":"drinks","label":"COKE / ເຄື່ອງດື່ມ","g":"bev","amount":3718000}],"discount":10674000},"note":"ຍອດຂາຍມາຈາກຊີດ Profit1 (ຫົວຂໍ້ໃນ Excel ຂຽນ 1-5/10/2026 ກະລຸນາກວດຄືນ)"},{"id":"w2","start":"2026-11-03","days":7,"by":"MS PHOTHALA","locked":false,"rows":{"i1":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":45064},"i2":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":147400},"i3":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":129074.07},"i4":{"begin":null,"tfIn":null,"d":[null,null,null,10],"tfOut":null,"end":null,"price":694300},"i5":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":28483.87},"i6":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":31258.95},"i7":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":28274.43},"i8":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":48590.13},"i9":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":31468.39},"i10":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":51191.588},"i11":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":419.04},"i12":{"begin":null,"tfIn":null,"d":[null,null,null,null,1000],"tfOut":null,"end":null,"price":479.52},"i13":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":626.4},"i14":{"begin":null,"tfIn":null,"d":[null,null,null,null,600],"tfOut":null,"end":null,"price":937.44},"i15":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":1382.4},"i16":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":138.24},"i17":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":179.28},"i18":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":356.4},"i19":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":270},"i20":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":209.52},"i21":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":419.04},"i22":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":231.12},"i23":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":40000},"i24":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":45000},"i25":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":11000},"i26":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i27":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i28":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i29":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i30":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":15909},"i31":{"begin":null,"tfIn":null,"d":[null,null,null,2],"tfOut":null,"end":null,"price":980000},"i32":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":570000},"i33":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":570000},"i34":{"begin":null,"tfIn":null,"d":[null,null,null,2],"tfOut":null,"end":1.8,"price":290000},"i35":{"begin":null,"tfIn":6,"d":[],"tfOut":null,"end":null,"price":17225},"i36":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":33279.875},"i37":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":28489},"i38":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":21510.2},"i39":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":79871},"i40":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":117274.05},"i41":{"begin":null,"tfIn":null,"d":[null,null,null,20],"tfOut":null,"end":null,"price":123797.4},"i42":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":168000},"i43":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":20000},"i44":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":17000},"i45":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":6800},"i46":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":42606.92},"i47":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":27923.62},"i48":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":59314},"i49":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":12368.6},"i50":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":527680},"i51":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":1400000},"i52":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":569250},"i53":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":931500},"i54":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":517500},"i55":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":910800},"i56":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":0},"i57":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":535612.5},"i58":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400},"i59":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400},"i60":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400},"i61":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400}},"sales":{"lines":[{"id":"fries","label":"FRIES (ມັນຝຣັ່ງ)","g":"food","amount":71865000},{"id":"chicken","label":"CHICKEN POP (ໄກ່ປັອບ)","g":"food","amount":25035000},{"id":"loopy","label":"LOOPY","g":"food","amount":null},{"id":"combo","label":"COMBO (ຊຸດຄອມໂບ)","g":"food","amount":19932000},{"id":"drinks","label":"COKE / ເຄື່ອງດື່ມ","g":"bev","amount":4807000}],"discount":780000},"note":"ຍັງບໍ່ໄດ້ປ້ອນຍອດນັບທ້າຍອາທິດ (ENDING) ໃນ Excel"},{"id":"w3","start":"2026-11-10","days":7,"by":"MS DAOLEE","locked":false,"rows":{"i1":{"begin":null,"tfIn":90.5,"d":[null,108],"tfOut":null,"end":null,"price":45064},"i2":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":147400},"i3":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":129074.07},"i4":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":694300},"i5":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":28483.87},"i6":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":31258.95},"i7":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":28274.43},"i8":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":48590.13},"i9":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":31468.39},"i10":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":51191.588},"i11":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":419.04},"i12":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":479.52},"i13":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":626.4},"i14":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":937.44},"i15":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":1382.4},"i16":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":138.24},"i17":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":179.28},"i18":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":356.4},"i19":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":270},"i20":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":209.52},"i21":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":419.04},"i22":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":231.12},"i23":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":40000},"i24":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":45000},"i25":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":0,"price":11000},"i26":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i27":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i28":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i29":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":8750},"i30":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":15909},"i31":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":980000},"i32":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":570000},"i33":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":570000},"i34":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":290000},"i35":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":17225},"i36":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":33279.875},"i37":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":28489},"i38":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":21510.2},"i39":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":79871},"i40":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":117274.05},"i41":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":123797.4},"i42":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":168000},"i43":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":20000},"i44":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":17000},"i45":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":6800},"i46":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":42606.92},"i47":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":27923.62},"i48":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":59314},"i49":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":12368.6},"i50":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":527680},"i51":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":1400000},"i52":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":569250},"i53":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":931500},"i54":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":517500},"i55":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":910800},"i56":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":0},"i57":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":535612.5},"i58":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400},"i59":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400},"i60":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400},"i61":{"begin":null,"tfIn":null,"d":[],"tfOut":null,"end":null,"price":41400}},"sales":{"lines":[{"id":"fries","label":"FRIES (ມັນຝຣັ່ງ)","g":"food","amount":null},{"id":"chicken","label":"CHICKEN POP (ໄກ່ປັອບ)","g":"food","amount":null},{"id":"loopy","label":"LOOPY","g":"food","amount":null},{"id":"combo","label":"COMBO (ຊຸດຄອມໂບ)","g":"food","amount":null},{"id":"drinks","label":"COKE / ເຄື່ອງດື່ມ","g":"bev","amount":null}],"discount":0},"note":""}]};
+const KEY = 'pc_inventory_megamall_v1';
+const UIKEY = 'pc_inventory_megamall_ui';
+
+const CATS = [
+  {id:'food',   name:'ອາຫານ',               en:'Food',      grp:'food'},
+  {id:'season', name:'ເຄື່ອງປຸງລົດຊາດ',      en:'Seasoning', grp:'food'},
+  {id:'pack',   name:'ຖົງ-ຖ້ວຍ-ບັນຈຸພັນ',     en:'Packaging', grp:'food'},
+  {id:'bev',    name:'ເຄື່ອງດື່ມ',           en:'Beverage',  grp:'bev'},
+  {id:'utensil',name:'ອຸປະກອນໃຊ້ສອຍ',        en:'Utensil',   grp:'supply'},
+  {id:'clean',  name:'ນ້ຳຢາທຳຄວາມສະອາດ',     en:'Cleaning',  grp:'supply'}
+];
+const GRP = {food:'ຕົ້ນທຶນອາຫານ', bev:'ຕົ້ນທຶນເຄື່ອງດື່ມ', supply:'ອຸປະກອນ ແລະ ທຳຄວາມສະອາດ'};
+const WD = ['ອາທິດ','ຈັນ','ອັງຄານ','ພຸດ','ພະຫັດ','ສຸກ','ເສົາ'];
+const MS = ['ມ.ກ.','ກ.ພ.','ມ.ນ.','ມ.ສ.','ພ.ພ.','ມິ.ຖ.','ກ.ລ.','ສ.ຫ.','ກ.ຍ.','ຕ.ລ.','ພ.ຈ.','ທ.ວ.'];
+const ML = ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
+const REASONS = ['ໝົດອາຍຸ','ເສຍຫາຍ / ເປື້ອນ','ເຮັດຜິດ / ເຮັດຖິ້ມ','ຕົກຫຼົ່ນ / ຫົກ','ອາຫານບໍ່ໄດ້ມາດຕະຖານ','ອື່ນໆ'];
+const TABS = [
+  ['overview','ພາບລວມ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],
+  ['month','ສະຫຼຸບເດືອນ'],['waste','ຂອງເສຍ'],['order','ແນະນຳສັ່ງຊື້'],['po','ໃບສັ່ງຊື້'],['items','ລາຍການສິນຄ້າ'],['settings','ຕັ້ງຄ່າ / ສຳຮອງ']
+];
+
+const OTYPES = [
+  {id:'frozen',name:'ຂອງແຊ່ແຂງ'},{id:'dry',name:'ສິນຄ້າແຫ້ງ'},{id:'season',name:'ເຄື່ອງປຸງ'},{id:'pack',name:'ບັນຈຸພັນ'},
+  {id:'bev',name:'ເຄື່ອງດື່ມ'},{id:'utensil',name:'ອຸປະກອນ'},{id:'clean',name:'ທຳຄວາມສະອາດ'}
+];
+const PO_STATUS = {draft:'ຮ່າງ',sent:'ສົ່ງແລ້ວ',received:'ຮັບເຂົ້າແລ້ວ'};
+function defOtype(it){
+  if(it.cat==='food') return /fries|chicken|loopy/i.test(it.name)?'frozen':'dry';
+  return {season:'season',pack:'pack',bev:'bev',utensil:'utensil',clean:'clean'}[it.cat]||'dry';
+}
+const otypeOf = it => it.otype || defOtype(it);
+function migrate(s){
+  s.items.forEach(it=>{ if(!it.otype) it.otype=defOtype(it); if(it.barcode==null) it.barcode=''; });
+  s.pos = s.pos || [];
+  s.settings = Object.assign({remindOn:true,remindTime:'08:00',lastNotify:''}, s.settings||{});
+  return s;
+}
+
+/* ============ ເຄື່ອງມືນ້ອຍໆ ============ */
+const $ = (s, el=document) => el.querySelector(s);
+const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
+const esc = s => String(s==null?'':s).replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const n0 = v => (typeof v==='number' && isFinite(v)) ? v : 0;
+const fn = v => (v==null||!isFinite(v)) ? '—' : (Math.round(v*100)/100).toLocaleString('en-US',{maximumFractionDigits:2});
+const fq = v => (v==null||!isFinite(v)) ? '' : String(Math.round(v*1000)/1000);
+const fi = v => (v==null||!isFinite(v)) ? '' : (Math.round(v*1000)/1000).toLocaleString('en-US',{maximumFractionDigits:3});
+const fm = v => (v==null||!isFinite(v)) ? '—' : Math.round(v).toLocaleString('en-US');
+const fp = v => (v==null||!isFinite(v)) ? '—' : (v*100).toFixed(1)+'%';
+const pad = n => String(n).padStart(2,'0');
+const toISO = d => `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+const parseD = s => { const [y,m,d]=s.split('-').map(Number); return new Date(Date.UTC(y,m-1,d)); };
+const addDays = (s,k) => { const d=parseD(s); d.setUTCDate(d.getUTCDate()+k); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`; };
+const dow = s => parseD(s).getUTCDay();
+const dnum = s => +s.slice(8,10);
+const mnum = s => +s.slice(5,7)-1;
+const monthEnd = s => { const [y,m]=s.split('-').map(Number); return `${y}-${pad(m)}-${pad(new Date(Date.UTC(y,m,0)).getUTCDate())}`; };
+const dShort = s => `${dnum(s)} ${MS[mnum(s)]}`;
+const uid = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2,5);
+const clone = o => JSON.parse(JSON.stringify(o));
+
+/* ຄິດໄລ່ສູດຕົວເລກ ເຊັ່ນ 27*50+31 (ແບບດຽວກັບທີ່ໃຊ້ໃນ Excel) */
+function parseExpr(str){
+  let s = String(str).trim().replace(/^=/,'').replace(/[×xX]/g,'*').replace(/÷/g,'/').replace(/,/g,'');
+  if(s==='') return null;
+  if(!/^[0-9+\-*/().\s]+$/.test(s)) return NaN;
+  try{ const v = Function('"use strict";return ('+s+')')(); return (typeof v==='number'&&isFinite(v))?Math.round(v*1e6)/1e6:NaN; }catch(e){ return NaN; }
+}
+
+/* ============ ສະຖານະ + ບັນທຶກ ============ */
+let state, ui, storageOK = true;
+function defaultState(){
+  const s = clone(SEED);
+  return migrate({v:1, settings:{branch:'POTATO CORNER MEGA MALL', staff:'MS PHOTHALA'}, items:s.items, weeks:s.weeks, waste:[]});
+}
+function load(){
+  try{
+    const raw = localStorage.getItem(KEY);
+    if(raw){ const s = JSON.parse(raw); if(s && s.items && s.weeks) return migrate(s); }
+  }catch(e){ storageOK=false; }
+  return defaultState();
+}
+function loadUI(){
+  const d = {tab:'overview', wid:null, cat:'all', todo:false, q:'', month:null, target:14, onlyLow:false, wmonth:null, poId:null, potype:'all', poOnly:false};
+  try{ const r=localStorage.getItem(UIKEY); if(r) Object.assign(d, JSON.parse(r)); }catch(e){}
+  return d;
+}
+let saveTimer;
+function save(){
+  touch();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(()=>{
+    try{ localStorage.setItem(KEY, JSON.stringify(state)); storageOK=true; setSaveInd('ບັນທຶກອັດຕະໂນມັດແລ້ວ '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})); }
+    catch(e){ storageOK=false; setSaveInd('ບັນທຶກໃນບຣາວເຊີບໍ່ໄດ້ — ກະລຸນາກົດ "ດາວໂຫຼດສຳຮອງ"', true); }
+  }, 150);
+}
+function saveUI(){ try{ localStorage.setItem(UIKEY, JSON.stringify(ui)); }catch(e){} }
+function setSaveInd(t, err){ const el=$('#saveInd'); if(el){ el.textContent=t; el.classList.toggle('err',!!err); } }
+
+/* ============ ຄິດໄລ່ ============ */
+let CACHE = new Map();
+function touch(){ CACHE = new Map(); }
+const sortedWeeks = () => state.weeks.slice().sort((a,b)=>a.start<b.start?-1:a.start>b.start?1:0);
+function prevWeek(w){ const arr=sortedWeeks(); const i=arr.findIndex(x=>x.id===w.id); return i>0?arr[i-1]:null; }
+const itemById = id => state.items.find(i=>i.id===id);
+const wEnd = w => addDays(w.start, w.days-1);
+const catOf = id => CATS.find(c=>c.id===id) || CATS[0];
+function rowOf(w,id,create){
+  let r = w.rows[id];
+  if(!r && create){ const it=itemById(id); r = w.rows[id] = {begin:null,tfIn:null,d:[],tfOut:null,end:null,price:it?it.price:0}; }
+  return r;
+}
+function hasData(w,id){
+  const r=w.rows[id]; if(!r) return false;
+  return r.begin!=null || r.tfIn!=null || r.tfOut!=null || r.end!=null || (r.d||[]).some(v=>v!=null);
+}
+function calc(w,id){
+  const key = w.id+'|'+id;
+  if(CACHE.has(key)) return CACHE.get(key);
+  const r = w.rows[id] || {begin:null,tfIn:null,d:[],tfOut:null,end:null,price:(itemById(id)||{}).price||0};
+  let begin, carried=false;
+  if(r.begin!=null) begin = r.begin;
+  else { const p=prevWeek(w); carried=true; if(p){ const pc=calc(p,id); begin = pc.end!=null ? pc.end : pc.total; } else begin=0; }
+  let dsum=0; for(let k=0;k<w.days;k++) dsum += n0(r.d&&r.d[k]);
+  const inn = n0(r.tfIn)+dsum, out = n0(r.tfOut), total = begin+inn-out;
+  const end = r.end!=null ? r.end : null;
+  const counted = end!=null || Math.abs(total)<1e-9;
+  const usage = counted ? total-(end||0) : null;
+  const price = r.price!=null ? r.price : 0;
+  const o = {begin,carried,inn,out,total,end,counted,usage,price,cost:usage!=null?usage*price:0,dsum};
+  CACHE.set(key,o); return o;
+}
+const activeItems = w => state.items.filter(it => it.active || hasData(w,it.id));
+function wsum(w){
+  const by={}; CATS.forEach(c=>by[c.id]={cost:0,stock:0,count:0,counted:0});
+  const grp={food:0,bev:0,supply:0};
+  let neg=[], todo=[], low=[];
+  activeItems(w).forEach(it=>{
+    const c=calc(w,it.id), b=by[it.cat]||by.food;
+    b.count++; if(c.counted) b.counted++; else todo.push(it);
+    b.cost+=c.cost; b.stock += (c.end!=null?c.end:c.total)*c.price;
+    if(c.usage!=null && c.usage<-1e-9) neg.push(it);
+    const cur = c.end!=null?c.end:c.total;
+    if(it.min!=null && cur < it.min) low.push(it);
+  });
+  CATS.forEach(c=>{ grp[c.grp]+=by[c.id].cost; });
+  const count=Object.values(by).reduce((s,b)=>s+b.count,0), counted=Object.values(by).reduce((s,b)=>s+b.counted,0);
+  return {by,grp,cost:grp.food+grp.bev+grp.supply,stock:Object.values(by).reduce((s,b)=>s+b.stock,0),count,counted,neg,todo,low};
+}
+function salesOf(w){
+  const lines=(w.sales&&w.sales.lines)||[];
+  const g={food:0,bev:0,other:0}; let gross=0;
+  lines.forEach(l=>{ const a=n0(l.amount); gross+=a; g[l.g||'other']+=a; });
+  const dsum=(w.daily||[]).slice(0,w.days).reduce((s,v)=>s+n0(v),0);
+  const usingDaily = gross===0 && dsum>0;
+  if(usingDaily){ gross=dsum; g.other=dsum; }
+  const disc=n0(w.sales&&w.sales.discount);
+  return {gross,disc,net:gross-disc,g,dsum,usingDaily};
+}
+function targetInfo(w){
+  const SL=salesOf(w), target=n0(w.target), t=toISO(new Date());
+  const days=[...Array(w.days).keys()].map(k=>addDays(w.start,k));
+  const perT=w.days?target/w.days:0, actual=SL.net;
+  const closed=days.filter(d=>d<t).length;
+  const daysLeft = t>wEnd(w)?0:(t<w.start?w.days:days.filter(d=>d>=t).length);
+  const remaining=Math.max(0,target-actual);
+  return {target,actual,perT,pct:target>0?actual/target:null,remaining,daysLeft,closed,
+    needPerDay:daysLeft>0?remaining/daysLeft:null, diff:closed>0?actual-perT*closed:null, days};
+}
+function targetHTML(w){
+  const T=targetInfo(w);
+  if(!(T.target>0)) return `<h3>ເປົ້າໝາຍຍອດຂາຍ</h3><p class="muted">ຍັງບໍ່ໄດ້ຕັ້ງເປົ້າໝາຍຂອງອາທິດນີ້</p><button class="btn sm" data-act="tab" data-v="profit">ຕັ້ງເປົ້າໝາຍ</button>`;
+  const p=T.pct, over=p>=1;
+  const pace = T.diff==null ? '' : (T.diff>=0 ? `<span class="chip ok">ນຳໜ້າເປົ້າ ${fm(T.diff)} ₭</span>` : `<span class="chip bad">ຕາມຫຼັງເປົ້າ ${fm(-T.diff)} ₭</span>`);
+  return `<h3>ເປົ້າໝາຍຍອດຂາຍອາທິດນີ້</h3>
+   <div style="display:flex;align-items:baseline;gap:10px;flex-wrap:wrap"><span style="font-size:34px;font-weight:700;color:${over?'var(--ok)':'var(--accent)'}" class="num">${fp(p)}</span><span class="muted">ຂອງເປົ້າໝາຍ</span> ${pace}</div>
+   <div class="bar ${over?'ok':''}" style="margin:10px 0 12px;height:12px"><i style="width:${Math.min(100,Math.round((p||0)*100))}%"></i></div>
+   <table class="plain"><tbody>
+    <tr><td>ເປົ້າໝາຍ</td><td class="num">${fm(T.target)} ₭</td></tr>
+    <tr><td>ຂາຍໄດ້ແລ້ວ (ສຸດທິ)</td><td class="num"><b>${fm(T.actual)} ₭</b></td></tr>
+    <tr><td>${over?'ເກີນເປົ້າ':'ເຫຼືອອີກ'}</td><td class="num ${over?'':'neg'}">${over?'+ '+fm(T.actual-T.target):fm(T.remaining)} ₭</td></tr>
+    <tr><td>ເປົ້າໝາຍຕໍ່ວັນ</td><td class="num">${fm(T.perT)} ₭</td></tr>
+    <tr><td>ວັນທີ່ເຫຼືອ</td><td class="num">${T.daysLeft} ວັນ</td></tr>
+    ${!over&&T.needPerDay!=null?`<tr class="tot"><td>ຕ້ອງຂາຍໃຫ້ໄດ້ຕໍ່ວັນ</td><td class="num">${fm(T.needPerDay)} ₭</td></tr>`:''}
+   </tbody></table>`;
+}
+const weekNo = w => { const ym=w.start.slice(0,7); return sortedWeeks().filter(x=>x.start.slice(0,7)===ym && x.start<=w.start).length; };
+const weekLabel = w => { const e=wEnd(w); return (w.start.slice(0,7)===e.slice(0,7)) ? `${dnum(w.start)}–${dnum(e)} ${MS[mnum(e)]}` : `${dShort(w.start)} – ${dShort(e)}`; };
+const weekFull = w => `ອາທິດທີ ${weekNo(w)} · ${weekLabel(w)} ${parseD(w.start).getUTCFullYear()}`;
+const monthName = ym => `${ML[+ym.slice(5,7)-1]} ${ym.slice(0,4)}`;
+function curWeek(){
+  const arr=sortedWeeks(); if(!arr.length) return null;
+  let w = arr.find(x=>x.id===ui.wid);
+  if(!w){
+    const t=toISO(new Date());
+    w = arr.find(x=>t>=x.start && t<=wEnd(x)) || arr[arr.length-1];
+    ui.wid=w.id;
+  }
+  return w;
+}
+
+/* ============ UI ພື້ນຖານ ============ */
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>t.classList.remove('show'),2400); }
+function openModal(html){ const m=$('#modal'); m.innerHTML=`<div class="sheetbox" role="dialog" aria-modal="true">${html}</div>`; m.classList.add('open'); const f=$('input,select',m); if(f&&!f.matches('[type=hidden]')) setTimeout(()=>f.focus(),30); }
+function closeModal(){ const m=$('#modal'); m.classList.remove('open'); m.innerHTML=''; }
+function confirmBox(title,msg,onOk,okLabel='ຢືນຢັນ'){
+  openModal(`<h3>${esc(title)}</h3><p>${msg}</p><div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn danger" id="confirmOk">${esc(okLabel)}</button></div>`);
+  $('#confirmOk').onclick=()=>{ closeModal(); onOk(); };
+}
+function download(name, text, mime){
+  const blob=new Blob([text],{type:mime||'text/plain'}); const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},500);
+}
+const csvCell = v => { const s=v==null?'':String(v); return /[",\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s; };
+const toCSV = rows => '﻿'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
+
+/* ============ ຫຼັກຂອງການສະແດງຜົນ ============ */
+function renderChrome(){
+  const w=curWeek();
+  $('#branchName').textContent = state.settings.branch;
+  const arr=sortedWeeks();
+  $('#weekSel').innerHTML = arr.map(x=>`<option value="${x.id}" ${w&&x.id===w.id?'selected':''}>${esc(weekFull(x))}${x.locked?' (ລັອກ)':''}</option>`).join('');
+  const S = w?wsum(w):null;
+  $('#tabs').innerHTML = TABS.map(([id,name])=>{
+    let badge=''; if(id==='count' && S && S.todo.length) badge=`<span class="dot">${S.todo.length}</span>`;
+    return `<button class="tab ${ui.tab===id?'on':''}" data-act="tab" data-v="${id}">${name}${badge}</button>`;
+  }).join('');
+}
+function render(){
+  renderChrome();
+  const v=$('#view');
+  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,items:V_items,settings:V_settings}[ui.tab]||V_overview;
+  v.innerHTML = remindHTML() + fn_();
+  refreshCalc();
+  const hdr=$('.top'); if(hdr) document.documentElement.style.setProperty('--hdr',(hdr.offsetHeight-1)+'px');
+}
+function lockBanner(w){
+  return w.locked ? `<div class="banner warn"><span>🔒 ອາທິດນີ້ຖືກລັອກແລ້ວ — ຈະແກ້ໄຂຂໍ້ມູນບໍ່ໄດ້ ຈົນກວ່າຈະປົດລັອກ</span><button class="btn sm" data-act="unlock">ປົດລັອກ</button></div>` : '';
+}
+function noWeek(){
+  return `<div class="card" style="text-align:center;padding:40px 16px"><h3>ຍັງບໍ່ມີອາທິດ</h3><p class="muted">ເລີ່ມຕົ້ນໂດຍການເປີດອາທິດທຳອິດ</p><button class="btn primary" data-act="newWeek">+ ເປີດອາທິດໃໝ່</button></div>`;
+}
+
+/* ---------- ພາບລວມ ---------- */
+function V_overview(){
+  const w=curWeek(); if(!w) return noWeek();
+  const S=wsum(w), SL=salesOf(w), pct=S.count?S.counted/S.count:0;
+  const costPct = SL.net>0 ? S.cost/SL.net : null;
+  const maxC=Math.max(1,...CATS.map(c=>S.by[c.id].cost));
+  const prev=prevWeek(w);
+  const prevUncounted = prev ? wsum(prev).todo.length : 0;
+  const filledSales = SL.gross>0;
+  const items = [
+    {ok:S.todo.length===0, t:S.todo.length?`ຍັງບໍ່ໄດ້ນັບ ${S.todo.length} ລາຍການ`:'ນັບສະຕັອກຄົບທຸກລາຍການແລ້ວ', act:'count', btn:'ໄປນັບສະຕັອກ'},
+    {ok:filledSales, t:filledSales?`ປ້ອນຍອດຂາຍແລ້ວ (${fm(SL.net)} ₭)`:'ຍັງບໍ່ໄດ້ປ້ອນຍອດຂາຍຂອງອາທິດນີ້', act:'profit', btn:'ປ້ອນຍອດຂາຍ'},
+    {ok:S.neg.length===0, t:S.neg.length?`ມີ ${S.neg.length} ລາຍການນັບໄດ້ຫຼາຍກວ່າທີ່ຄວນມີ (ໃຊ້ໄປຕິດລົບ) — ກວດຄືນ`:'ບໍ່ມີລາຍການຜິດປົກກະຕິ', act:'sheet', btn:'ເບິ່ງຕາຕະລາງ'},
+    {ok:S.low.length===0, t:S.low.length?`ມີ ${S.low.length} ລາຍການຕ່ຳກວ່າຂັ້ນຕ່ຳ — ຄວນສັ່ງຊື້`:'ບໍ່ມີລາຍການຕ່ຳກວ່າຂັ້ນຕ່ຳ (ຕັ້ງຂັ້ນຕ່ຳໄດ້ໃນແຖບ "ສັ່ງຊື້")', act:'order', btn:'ເບິ່ງລາຍການສັ່ງຊື້'},
+  ];
+  const trend = sortedWeeks().slice(-8).map(x=>{ const s=wsum(x), sl=salesOf(x); return {w:x,cost:s.cost,net:sl.net,pct:sl.net>0?s.cost/sl.net:null,ok:s.todo.length===0}; });
+  return `
+  ${lockBanner(w)}
+  ${prevUncounted?`<div class="banner warn"><span>ອາທິດກ່ອນຫນ້ານີ້ຍັງມີ ${prevUncounted} ລາຍການທີ່ບໍ່ມີຍອດນັບທ້າຍອາທິດ — ຍອດຍົກມາຂອງອາທິດນີ້ຈຶ່ງໃຊ້ "ຍອດຄາດວ່າເຫຼືອ" ແທນ. ແກ້ໄຂໄດ້ໂດຍການພິມຍອດຍົກມາໃນຕາຕະລາງອາທິດ.</span></div>`:''}
+  <div class="view-title"><div><h2>${esc(weekFull(w))}</h2><p>${w.days} ວັນ · ${WD[dow(w.start)]} ${dShort(w.start)} ຫາ ${WD[dow(wEnd(w))]} ${dShort(wEnd(w))}</p></div>
+    <div class="actions"><button class="btn primary" data-act="tab" data-v="count">ເລີ່ມນັບສະຕັອກ</button><button class="btn" data-act="newWeek">+ ເປີດອາທິດໃໝ່</button></div></div>
+  <div class="grid kpis">
+    <div class="card kpi"><div class="lbl">ຍອດຂາຍສຸດທິ</div><div class="val">${fm(SL.net)} ₭</div><div class="sub">${SL.gross?`ຍອດຂາຍລວມ ${fm(SL.gross)} − ສ່ວນຫຼຸດ ${fm(SL.disc)}`:'ຍັງບໍ່ໄດ້ປ້ອນ'}</div></div>
+    <div class="card kpi"><div class="lbl">ຕົ້ນທຶນທີ່ໃຊ້ໄປ</div><div class="val">${fm(S.cost)} ₭</div><div class="sub">${S.counted<S.count?'ຄຳນວນສະເພາະລາຍການທີ່ນັບແລ້ວ':'ນັບຄົບທຸກລາຍການ'}</div></div>
+    <div class="card kpi"><div class="lbl">ຕົ້ນທຶນ / ຍອດຂາຍ</div><div class="val">${fp(costPct)}</div><div class="sub">ອາຫານ ${fp(SL.g.food>0?S.grp.food/SL.g.food:null)} · ເຄື່ອງດື່ມ ${fp(SL.g.bev>0?S.grp.bev/SL.g.bev:null)}</div></div>
+    <div class="card kpi"><div class="lbl">ມູນຄ່າສະຕັອກຄົງເຫຼືອ</div><div class="val">${fm(S.stock)} ₭</div><div class="sub">ນັບແລ້ວ ${S.counted}/${S.count} ລາຍການ</div></div>
+  </div>
+  <div class="sp"></div>
+  <div class="grid two"><div class="card">${targetHTML(w)}</div>
+    <div class="card"><h3>ຍອດຂາຍປະຈຳວັນ</h3><table class="plain"><thead><tr><th>ວັນ</th><th>ເປົ້າ/ວັນ</th><th>ຂາຍຈິງ</th><th>%</th></tr></thead><tbody>${targetInfo(w).days.map((d,k)=>{ const v=w.daily&&w.daily[k], pt=targetInfo(w).perT; return `<tr><td>${WD[dow(d)]} ${dnum(d)}</td><td class="num">${pt?fm(pt):'—'}</td><td class="num">${v!=null?fm(v):'—'}</td><td class="num ${v!=null&&pt&&v<pt?'neg':''}">${v!=null&&pt?fp(v/pt):'—'}</td></tr>`; }).join('')}</tbody></table>
+    <p class="hint" style="margin:8px 0 0">ປ້ອນໃນແຖບ "ຍອດຂາຍ & ຕົ້ນທຶນ"</p></div></div>
+  <div class="sp"></div>
+  <div class="grid two">
+    <div class="card"><h3>ສິ່ງທີ່ຕ້ອງເຮັດ</h3>
+      <ul class="todo-list">${items.map(i=>`<li><span class="st"><span class="tick ${i.ok?'ok':'bad'}">${i.ok?'✓':'!'}</span><span>${i.t}</span></span>${i.ok?'':`<button class="btn sm" data-act="tab" data-v="${i.act}">${i.btn}</button>`}</li>`).join('')}</ul>
+      <div class="sp"></div>
+      <div class="hint">ຄວາມຄືບໜ້າການນັບ</div><div class="bar ${pct>=1?'ok':''}" style="margin-top:6px"><i style="width:${Math.round(pct*100)}%"></i></div>
+    </div>
+    <div class="card"><h3>ຕົ້ນທຶນແຍກຕາມໝວດ</h3>
+      ${CATS.map(c=>`<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;font-size:13.5px"><span>${c.name}</span><b class="num">${fm(S.by[c.id].cost)} ₭</b></div><div class="bar"><i style="width:${Math.round(S.by[c.id].cost/maxC*100)}%"></i></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="sp"></div>
+  <div class="card"><h3>ແນວໂນ້ມຕາມອາທິດ</h3><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ອາທິດ</th><th>ຍອດຂາຍສຸດທິ</th><th>ຕົ້ນທຶນ</th><th>ຕົ້ນທຶນ %</th><th>ສະຖານະນັບ</th></tr></thead><tbody>
+    ${trend.map(t=>`<tr><td>${esc(weekFull(t.w))}</td><td class="num">${fm(t.net)}</td><td class="num">${fm(t.cost)}</td><td class="num">${fp(t.pct)}</td><td style="text-align:center">${t.ok?'<span class="chip ok">ນັບຄົບ</span>':'<span class="chip warn">ຍັງບໍ່ຄົບ</span>'}</td></tr>`).join('')}
+  </tbody></table></div></div>`;
+}
+
+/* ---------- ນັບສະຕັອກ ---------- */
+function V_count(){
+  const w=curWeek(); if(!w) return noWeek();
+  const S=wsum(w);
+  const dis = w.locked?'disabled':'';
+  const cats = [['all','ທັງໝົດ'],...CATS.map(c=>[c.id,c.name])];
+  const list = activeItems(w).filter(it=>(ui.cat==='all'||it.cat===ui.cat) && (!ui.q || it.name.toLowerCase().includes(ui.q.toLowerCase())));
+  const shown = ui.todo ? list.filter(it=>!calc(w,it.id).counted) : list;
+  const out = CATS.map(c=>{
+    const arr=shown.filter(it=>it.cat===c.id); if(!arr.length) return '';
+    return `<h3 style="margin:18px 0 10px;font-size:16px">${c.name} <span class="chip" data-ct="cnt" data-cat="${c.id}"></span></h3><div class="cc-grid">${arr.map(it=>countCard(w,it,dis)).join('')}</div>`;
+  }).join('');
+  return `
+  ${lockBanner(w)}
+  <div class="view-title"><div><h2>ນັບສະຕັອກ</h2><p>${esc(weekFull(w))} · ພິມຈຳນວນທີ່ນັບໄດ້ຈິງໃນຊ່ອງ "ນັບໄດ້ຈິງ" (ພິມສູດໄດ້ ເຊັ່ນ 27*50+31)</p></div>
+    <div class="actions"><button class="btn" data-act="receive" ${dis}>+ ບັນທຶກຮັບເຂົ້າ</button><button class="btn" data-act="printCount">ພິມໃບນັບ</button><button class="btn primary" data-act="finishCount" ${dis}>ນັບຄົບແລ້ວ</button></div></div>
+  <div class="count-bar">
+    <div class="card" style="padding:12px 14px">
+      <div style="display:flex;justify-content:space-between;gap:10px;font-size:13.5px;margin-bottom:6px"><b id="prog-txt"></b><span class="muted">ໃຊ້ໄປ <b class="num" id="prog-cost"></b> ₭</span></div>
+      <div class="bar" id="prog-wrap"><i id="prog-bar" style="width:0"></i></div>
+    </div>
+  </div>
+  <div class="card" style="padding:12px 14px;margin-bottom:12px">
+    <div>
+      <div class="chips" style="margin-top:0">${cats.map(([id,name])=>`<button class="pill ${ui.cat===id?'on':''}" data-act="cat" data-v="${id}">${name}</button>`).join('')}</div>
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><input type="text" id="q" placeholder="ຄົ້ນຫາຊື່ສິນຄ້າ..." value="${esc(ui.q)}" style="max-width:260px"><input type="text" id="cScan" placeholder="ສະແກນບາໂຄດ → ໄປຍັງລາຍການ" inputmode="numeric" style="max-width:260px"><label style="display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" data-f="todo" ${ui.todo?'checked':''}> ສະເພາະທີ່ຍັງບໍ່ໄດ້ນັບ</label></div>
+    </div>
+  </div>
+  ${out || '<div class="card muted" style="text-align:center">ບໍ່ມີລາຍການທີ່ກົງກັບເງື່ອນໄຂ</div>'}`;
+}
+function countCard(w,it,dis){
+  const c=calc(w,it.id), r=w.rows[it.id]||{};
+  const step = /GAL/i.test(it.unit)?0.1:1;
+  return `<div class="cc todo" data-o="card" data-i="${it.id}">
+    <div class="hd"><div><b>${esc(it.name)}</b><div class="meta">${esc(it.unit)} · ${fm(it.price)} ₭/ໜ່ວຍ</div></div><span class="chip" data-o="status" data-i="${it.id}"></span></div>
+    <div class="meta">ຍອດຍົກມາ <b class="num" data-o="beginT" data-i="${it.id}"></b> + ຮັບເຂົ້າ <b class="num" data-o="inn" data-i="${it.id}"></b> − ໂອນອອກ <b class="num" data-o="out" data-i="${it.id}"></b> = ຄາດວ່າເຫຼືອ <b class="num" data-o="total" data-i="${it.id}"></b></div>
+    <div class="stepper"><button data-act="step" data-i="${it.id}" data-d="-${step}" ${dis} aria-label="ລົບ">−</button>
+      <input class="cell" style="width:100%" type="text" inputmode="decimal" data-k="end" data-i="${it.id}" value="${r.end!=null?fq(r.end):''}" placeholder="ນັບໄດ້ຈິງ" ${dis}>
+      <button data-act="step" data-i="${it.id}" data-d="${step}" ${dis} aria-label="ບວກ">+</button></div>
+    <div class="res"><span>ໃຊ້ໄປ <b class="num" data-o="usage" data-i="${it.id}"></b> · <span class="num" data-o="cost" data-i="${it.id}"></span> ₭</span>
+      <span style="display:flex;gap:6px"><button class="btn sm" data-act="same" data-i="${it.id}" ${dis} title="ນັບໄດ້ເທົ່າກັບທີ່ຄາດໄວ້">ເທົ່າທີ່ຄາດ</button>${it.pack?`<button class="btn sm" data-act="packcalc" data-i="${it.id}" ${dis}>ຄິດໄລ່ກ່ອງ</button>`:''}</span></div>
+  </div>`;
+}
+
+/* ---------- ຕາຕະລາງອາທິດ ---------- */
+function V_sheet(){
+  const w=curWeek(); if(!w) return noWeek();
+  const dis=w.locked?'disabled':'';
+  const days=[...Array(w.days).keys()].map(k=>addDays(w.start,k));
+  const head = `<thead><tr><th class="name">ລາຍການ</th><th>ໜ່ວຍ</th><th>ຍອດຍົກມາ</th><th>ໂອນເຂົ້າ</th>${days.map(d=>`<th>${WD[dow(d)]}<br><span style="font-weight:400">${dnum(d)}</span></th>`).join('')}<th>ໂອນອອກ</th><th>ລວມ</th><th>ນັບໄດ້ຈິງ</th><th>ໃຊ້ໄປ</th><th>ລາຄາ/ໜ່ວຍ (₭)</th><th>ມູນຄ່າ (₭)</th></tr></thead>`;
+  const colspan = 11+w.days;
+  const body = CATS.map(c=>{
+    const arr=activeItems(w).filter(it=>it.cat===c.id);
+    return `<tr class="cat"><td colspan="${colspan}">${CATS.indexOf(c)+1}. ${c.name} (${c.en})</td></tr>`+
+    arr.map(it=>{
+      const r=rowOf(w,it.id,false)||{d:[]};
+      const inp=(k,val,cls='')=>`<input class="cell ${cls}" type="text" inputmode="decimal" data-k="${k}" data-i="${it.id}" value="${val!=null?fq(val):''}" ${dis}>`;
+      return `<tr><td class="name">${esc(it.name)}${it.min!=null?`<small>ຂັ້ນຕ່ຳ ${it.min}</small>`:''}</td><td class="unit">${esc(it.unit)}</td>
+        <td><input class="cell auto" type="text" inputmode="decimal" data-k="begin" data-i="${it.id}" data-o="begin" ${dis}></td>
+        <td>${inp('tfIn',r.tfIn)}</td>
+        ${days.map((d,k)=>`<td>${inp('d'+k,r.d&&r.d[k])}</td>`).join('')}
+        <td>${inp('tfOut',r.tfOut)}</td>
+        <td class="num" data-o="total" data-i="${it.id}"></td>
+        <td data-o="endcell" data-i="${it.id}">${inp('end',r.end)}</td>
+        <td class="num" data-o="usage" data-i="${it.id}"></td>
+        <td>${inp('price',r.price!=null?r.price:it.price,'wide').replace(/value="([\d.]+)"/,(m,x)=>`value="${fi(+x)}"`)}</td>
+        <td class="num" data-o="cost" data-i="${it.id}"></td></tr>`;
+    }).join('')+
+    `<tr class="tot"><td class="name">ລວມ ${c.name}</td><td colspan="${colspan-2}"></td><td class="num" data-ct="cost" data-cat="${c.id}"></td></tr>`;
+  }).join('');
+  return `${lockBanner(w)}
+  <div class="view-title"><div><h2>ຕາຕະລາງອາທິດ</h2><p>${esc(weekFull(w))} · ແທນຊີດ inventory ໃນ Excel. ຊ່ອງສີເທົາ-ໂຕເອນ = ດຶງຈາກຍອດນັບທ້າຍອາທິດກ່ອນອັດຕະໂນມັດ (ພິມທັບໄດ້)</p></div>
+   <div class="actions"><button class="btn" data-act="receive" ${dis}>+ ບັນທຶກຮັບເຂົ້າ</button><button class="btn" data-act="exportWeek">ດາວໂຫຼດ CSV</button>${w.locked?'':'<button class="btn" data-act="lock">ລັອກອາທິດ</button>'}<button class="btn danger" data-act="delWeek">ລຶບອາທິດ</button></div></div>
+  <div class="tbl-wrap"><table class="sheet">${head}<tbody>${body}</tbody></table></div>
+  <p class="hint">ໂອນເຂົ້າ/ໂອນອອກ = T/F In / T/F Out ໃນ Excel. ແກ້ລາຄາໃນຕາຕະລາງຈະບັນທຶກເປັນລາຄາຂອງອາທິດນີ້ ແລະ ເປັນລາຄາຫຼ້າສຸດສຳລັບອາທິດໃໝ່.</p>`;
+}
+
+/* ---------- ຍອດຂາຍ & ຕົ້ນທຶນ ---------- */
+function V_profit(){
+  const w=curWeek(); if(!w) return noWeek();
+  const dis=w.locked?'disabled':'';
+  const L=(w.sales&&w.sales.lines)||[];
+  const lab=w.labour||{};
+  const T0=targetInfo(w);
+  const tgtCard = `<div class="grid two" style="margin-bottom:14px"><div class="card"><h3>ເປົ້າໝາຍ & ຍອດຂາຍປະຈຳວັນ</h3>
+    <label class="f">ເປົ້າໝາຍຍອດຂາຍຂອງອາທິດ (₭)</label><input type="text" inputmode="decimal" style="text-align:right;font-size:18px" data-f="wTarget" value="${w.target?fi(w.target):''}" placeholder="ເຊັ່ນ 120,000,000" ${dis}>
+    <div class="sp"></div>
+    <table class="plain"><thead><tr><th>ວັນ</th><th>ເປົ້າ/ວັນ</th><th>ຍອດຂາຍຈິງ (₭)</th><th>% ເປົ້າ</th></tr></thead><tbody>
+    ${T0.days.map((d,k)=>`<tr><td>${WD[dow(d)]} ${dnum(d)}</td><td class="num" data-dt="${k}"></td><td><input class="cell wide" type="text" inputmode="decimal" data-dl="${k}" value="${w.daily&&w.daily[k]!=null?fi(w.daily[k]):''}" placeholder="0" ${dis}></td><td class="num" data-dp="${k}"></td></tr>`).join('')}
+    <tr class="tot"><td>ລວມ</td><td class="num" data-dt="all"></td><td class="num" data-dsum></td><td class="num" data-dp="all"></td></tr></tbody></table>
+    <p class="hint" style="margin:8px 0 0">ຖ້າບໍ່ໄດ້ປ້ອນຍອດຂາຍແຍກຕາມສິນຄ້າ (ຊ່ອງດ້ານລຸ່ມ) ລະບົບຈະໃຊ້ຜົນລວມຍອດຂາຍປະຈຳວັນນີ້ເປັນຍອດຂາຍຂອງອາທິດ.</p></div>
+    <div class="card" id="tgtRes"></div></div>`;
+  return `${lockBanner(w)}
+  <div class="view-title"><div><h2>ຍອດຂາຍ & ຕົ້ນທຶນ</h2><p>${esc(weekFull(w))} · ແທນຊີດ PROFIT CONTROL SUMMARY</p></div><div class="actions"><button class="btn" data-act="exportProfit">ດາວໂຫຼດ CSV</button></div></div>
+  ${tgtCard}
+  <div class="grid two">
+    <div class="card"><h3>ຍອດຂາຍ (ກີບ)</h3>
+      ${L.map((l,i)=>`<div class="sale-line"><input type="text" data-sl="${i}" data-p="label" value="${esc(l.label)}" ${dis}>
+        <select data-sl="${i}" data-p="g" ${dis} style="width:100%"><option value="food" ${l.g==='food'?'selected':''}>ອາຫານ</option><option value="bev" ${l.g==='bev'?'selected':''}>ເຄື່ອງດື່ມ</option><option value="other" ${l.g==='other'?'selected':''}>ອື່ນໆ</option></select>
+        <input type="text" inputmode="decimal" style="text-align:right" data-sl="${i}" data-p="amount" value="${l.amount!=null?fi(l.amount):''}" placeholder="0" ${dis}>
+        <button class="btn sm danger" data-act="delSale" data-i="${i}" ${dis} aria-label="ລຶບ">×</button></div>`).join('')}
+      <button class="btn sm" data-act="addSale" ${dis}>+ ເພີ່ມແຖວຍອດຂາຍ</button>
+      <div class="sp"></div>
+      <label class="f">ສ່ວນຫຼຸດ / ໂປຣໂມຊັນ (ຫັກອອກຈາກຍອດຂາຍ)</label>
+      <input type="text" inputmode="decimal" style="text-align:right" data-f="discount" value="${w.sales&&w.sales.discount?fi(w.sales.discount):''}" placeholder="0" ${dis}>
+      <div class="sp"></div>
+      <div class="row cols2"><div><label class="f">ຄ່າແຮງງານ (₭)</label><input type="text" inputmode="decimal" style="text-align:right" data-f="labCost" value="${lab.cost!=null?fi(lab.cost):''}" ${dis}></div>
+      <div><label class="f">ຊົ່ວໂມງເຮັດວຽກລວມ</label><input type="text" inputmode="decimal" style="text-align:right" data-f="labHours" value="${lab.hours!=null?fq(lab.hours):''}" ${dis}></div></div>
+      <div class="sp"></div>
+      <label class="f">ໝາຍເຫດ</label><input type="text" data-f="note" value="${esc(w.note||'')}" ${dis}>
+    </div>
+    <div class="card" id="profitSum"></div>
+  </div>`;
+}
+function profitSummary(w){
+  const S=wsum(w), SL=salesOf(w), lab=w.labour||{};
+  const pg=(c,s)=>s>0?fp(c/s):'—';
+  const profit = SL.net-S.cost;
+  return `<h3>ສະຫຼຸບ</h3>
+  <table class="plain"><tbody>
+    <tr><td>ຍອດຂາຍລວມ</td><td class="num">${fm(SL.gross)} ₭</td></tr>
+    <tr><td>ອາຫານ / ເຄື່ອງດື່ມ / ອື່ນໆ</td><td class="num">${fm(SL.g.food)} / ${fm(SL.g.bev)} / ${fm(SL.g.other)}</td></tr>
+    <tr><td>ຫັກ ສ່ວນຫຼຸດ</td><td class="num">− ${fm(SL.disc)} ₭</td></tr>
+    <tr class="tot"><td>ຍອດຂາຍສຸດທິ</td><td class="num">${fm(SL.net)} ₭</td></tr>
+  </tbody></table><div class="sp"></div>
+  <table class="plain"><thead><tr><th>ຕົ້ນທຶນຕາມໝວດ</th><th>ມູນຄ່າ (₭)</th><th>% ຂອງຍອດຂາຍສຸດທິ</th></tr></thead><tbody>
+    ${CATS.map(c=>`<tr><td>${c.name}</td><td class="num">${fm(S.by[c.id].cost)}</td><td class="num">${pg(S.by[c.id].cost,SL.net)}</td></tr>`).join('')}
+    <tr class="tot"><td>ຕົ້ນທຶນລວມທັງໝົດ</td><td class="num">${fm(S.cost)}</td><td class="num">${pg(S.cost,SL.net)}</td></tr>
+  </tbody></table><div class="sp"></div>
+  <table class="plain"><thead><tr><th>ກຸ່ມ</th><th>ຕົ້ນທຶນ</th><th>ຍອດຂາຍ</th><th>ຕົ້ນທຶນ %</th></tr></thead><tbody>
+    <tr><td>${GRP.food}</td><td class="num">${fm(S.grp.food)}</td><td class="num">${fm(SL.g.food)}</td><td class="num">${pg(S.grp.food,SL.g.food)}</td></tr>
+    <tr><td>${GRP.bev}</td><td class="num">${fm(S.grp.bev)}</td><td class="num">${fm(SL.g.bev)}</td><td class="num">${pg(S.grp.bev,SL.g.bev)}</td></tr>
+    <tr><td>${GRP.supply}</td><td class="num">${fm(S.grp.supply)}</td><td class="num">—</td><td class="num">${pg(S.grp.supply,SL.net)}</td></tr>
+  </tbody></table><div class="sp"></div>
+  <table class="plain"><tbody>
+    <tr class="tot"><td>ກຳໄລຂັ້ນຕົ້ນ (ຍອດຂາຍສຸດທິ − ຕົ້ນທຶນ)</td><td class="num ${profit<0?'neg':''}">${fm(profit)} ₭ · ${pg(profit,SL.net)}</td></tr>
+    <tr><td>ຍອດຂາຍສະເລ່ຍຕໍ່ວັນ</td><td class="num">${fm(SL.net/w.days)} ₭</td></tr>
+    <tr><td>ຜະລິດຕະພາບ (ຍອດຂາຍ ÷ ຊົ່ວໂມງ)</td><td class="num">${lab.hours>0?fm(SL.gross/lab.hours)+' ₭/ຊມ':'—'}</td></tr>
+    <tr><td>ຄ່າແຮງງານ % ຂອງຍອດຂາຍ</td><td class="num">${pg(n0(lab.cost),SL.net)}</td></tr>
+  </tbody></table>
+  ${S.todo.length?`<p class="hint" style="margin-top:10px">⚠ ຍັງມີ ${S.todo.length} ລາຍການທີ່ບໍ່ໄດ້ນັບສະຕັອກ — ຕົ້ນທຶນຈະຕ່ຳກວ່າຄວາມຈິງຈົນກວ່າຈະນັບຄົບ</p>`:''}`;
+}
+
+/* ---------- ສະຫຼຸບເດືອນ ---------- */
+function monthsList(){ return Array.from(new Set(state.weeks.map(w=>w.start.slice(0,7)))).sort(); }
+function monthAgg(ym){
+  const W=sortedWeeks().filter(w=>w.start.slice(0,7)===ym);
+  if(!W.length) return null;
+  const first=W[0], last=W[W.length-1];
+  const ids=state.items.filter(it=>it.active||W.some(w=>hasData(w,it.id)));
+  const rows=ids.map(it=>{
+    const cs=W.map(w=>calc(w,it.id));
+    const begin=cs[0].begin, inn=cs.reduce((s,c)=>s+c.inn,0), out=cs.reduce((s,c)=>s+c.out,0);
+    const lc=cs[cs.length-1], end=lc.end!=null?lc.end:lc.total;
+    const usage=cs.reduce((s,c)=>s+(c.usage||0),0), cost=cs.reduce((s,c)=>s+c.cost,0);
+    return {it,begin,inn,out,end,endCounted:lc.counted,usage,cost,wk:cs.map(c=>c.cost),stockV:end*lc.price};
+  });
+  const sales=W.reduce((a,w)=>{const s=salesOf(w);a.gross+=s.gross;a.disc+=s.disc;a.net+=s.net;return a;},{gross:0,disc:0,net:0});
+  const wsums=W.map(wsum);
+  const byCat={}; CATS.forEach(c=>byCat[c.id]=rows.filter(r=>r.it.cat===c.id).reduce((s,r)=>s+r.cost,0));
+  const cost=Object.values(byCat).reduce((s,v)=>s+v,0);
+  const wasteCost=state.waste.filter(x=>x.date.slice(0,7)===ym).reduce((s,x)=>s+wasteVal(x),0);
+  return {W,first,last,rows,sales,byCat,cost,wasteCost,allCounted:wsums.every(s=>s.todo.length===0),stock:rows.reduce((s,r)=>s+r.stockV,0),wsums};
+}
+function V_month(){
+  const ms=monthsList(); if(!ms.length) return noWeek();
+  if(!ui.month || !ms.includes(ui.month)){ const w=curWeek(); ui.month = w?w.start.slice(0,7):ms[ms.length-1]; }
+  const A=monthAgg(ui.month);
+  const weeksTxt=A.W.map((w,i)=>`ອ.${i+1}`);
+  const lastEnd=wEnd(A.last), mEnd=monthEnd(A.first.start);
+  const reachesEnd = lastEnd>=mEnd;
+  const nextExists = state.weeks.some(w=>w.start>mEnd);
+  const salesFilled = A.W.every(w=>salesOf(w).gross>0);
+  const chk=[
+    {ok:A.allCounted,t:'ນັບສະຕັອກຄົບທຸກອາທິດໃນເດືອນ (ໂດຍສະເພາະການນັບທ້າຍເດືອນໃນອາທິດສຸດທ້າຍ)'},
+    {ok:salesFilled,t:'ປ້ອນຍອດຂາຍຄົບທຸກອາທິດ'},
+    {ok:reachesEnd,t:`ອາທິດສຸດທ້າຍຄອບຄຸມເຖິງວັນທີ ${dShort(mEnd)} (ຕອນນີ້ເຖິງ ${dShort(lastEnd)})`},
+    {ok:A.wasteCost>0||state.waste.some(x=>x.date.slice(0,7)===ym_(A)),t:'ບັນທຶກຂອງເສຍຂອງເດືອນນີ້ (ຖ້າມີ)',soft:true},
+  ];
+  return `
+  <div class="view-title"><div><h2>ສະຫຼຸບເດືອນ ${monthName(ui.month)}</h2><p>ແທນຊີດ inventory monthly + Profit monthly — ລວມຈາກທຸກອາທິດໃນເດືອນ</p></div>
+    <div class="actions"><select data-f="month">${ms.map(m=>`<option value="${m}" ${m===ui.month?'selected':''}>${monthName(m)}</option>`).join('')}</select><button class="btn" data-act="exportMonth">ດາວໂຫຼດ CSV</button><button class="btn primary" data-act="newWeek">${reachesEnd?'ເປີດເດືອນຖັດໄປ':'+ ເປີດອາທິດຕໍ່ໄປ'}</button></div></div>
+  <div class="grid kpis">
+    <div class="card kpi"><div class="lbl">ຍອດຂາຍສຸດທິ</div><div class="val">${fm(A.sales.net)} ₭</div></div>
+    <div class="card kpi"><div class="lbl">ເປົ້າໝາຍເດືອນ</div><div class="val">${(()=>{const tg=A.W.reduce((s,x)=>s+n0(x.target),0);return tg>0?fp(A.sales.net/tg):'—';})()}</div><div class="sub">${fm(A.W.reduce((s,x)=>s+n0(x.target),0))} ₭ (ລວມເປົ້າທຸກອາທິດ)</div></div>
+    <div class="card kpi"><div class="lbl">ຕົ້ນທຶນລວມ</div><div class="val">${fm(A.cost)} ₭</div><div class="sub">${fp(A.sales.net>0?A.cost/A.sales.net:null)} ຂອງຍອດຂາຍ</div></div>
+    <div class="card kpi"><div class="lbl">ມູນຄ່າຂອງເສຍ</div><div class="val">${fm(A.wasteCost)} ₭</div><div class="sub">${fp(A.cost>0?A.wasteCost/A.cost:null)} ຂອງຕົ້ນທຶນ</div></div>
+    <div class="card kpi"><div class="lbl">ມູນຄ່າສະຕັອກທ້າຍເດືອນ</div><div class="val">${fm(A.stock)} ₭</div><div class="sub">ຍົກໄປເປັນຍອດຍົກມາເດືອນຖັດໄປ</div></div>
+  </div><div class="sp"></div>
+  <div class="grid two">
+   <div class="card"><h3>ຂັ້ນຕອນປິດເດືອນ & ເລີ່ມເດືອນຖັດໄປ</h3>
+    <ul class="todo-list">${chk.map(c=>`<li><span class="st"><span class="tick ${c.ok?'ok':'bad'}">${c.ok?'✓':(c.soft?'–':'!')}</span><span>${c.t}</span></span></li>`).join('')}
+    <li><span class="st"><span class="tick ${nextExists?'ok':'bad'}">${nextExists?'✓':'!'}</span><span>${nextExists?'ເປີດເດືອນຖັດໄປແລ້ວ':'ກົດ "ເປີດເດືອນຖັດໄປ" — ລະບົບຈະຍົກຍອດນັບທ້າຍເດືອນໄປເປັນຍອດຍົກມາຂອງເດືອນໃໝ່ໃຫ້ເອງ'}</span></span></li></ul></div>
+   <div class="card"><h3>ຕົ້ນທຶນຕາມໝວດ</h3><table class="plain"><tbody>${CATS.map(c=>`<tr><td>${c.name}</td><td class="num">${fm(A.byCat[c.id])}</td><td class="num">${fp(A.sales.net>0?A.byCat[c.id]/A.sales.net:null)}</td></tr>`).join('')}<tr class="tot"><td>ລວມ</td><td class="num">${fm(A.cost)}</td><td class="num">${fp(A.sales.net>0?A.cost/A.sales.net:null)}</td></tr></tbody></table></div>
+  </div><div class="sp"></div>
+  <div class="tbl-wrap"><table class="sheet"><thead><tr><th class="name">ລາຍການ</th><th>ໜ່ວຍ</th><th>ຍອດຍົກມາ</th><th>ຮັບເຂົ້າ</th><th>ໂອນອອກ</th><th>ຍອດທ້າຍເດືອນ</th><th>ໃຊ້ໄປ</th>${weeksTxt.map(t=>`<th>ມູນຄ່າ ${t}</th>`).join('')}<th>ມູນຄ່າລວມ (₭)</th></tr></thead><tbody>
+  ${CATS.map(c=>{ const rs=A.rows.filter(r=>r.it.cat===c.id); return `<tr class="cat"><td colspan="${8+weeksTxt.length}">${c.name}</td></tr>`+rs.map(r=>`<tr><td class="name">${esc(r.it.name)}</td><td class="unit">${esc(r.it.unit)}</td><td class="num">${fn(r.begin)}</td><td class="num">${fn(r.inn)}</td><td class="num">${fn(r.out)}</td><td class="num">${fn(r.end)}${r.endCounted?'':' *'}</td><td class="num">${fn(r.usage)}</td>${r.wk.map(v=>`<td class="num">${fm(v)}</td>`).join('')}<td class="num"><b>${fm(r.cost)}</b></td></tr>`).join('')+`<tr class="tot"><td class="name">ລວມ ${c.name}</td><td colspan="${6+weeksTxt.length}"></td><td class="num">${fm(A.byCat[c.id])}</td></tr>`; }).join('')}
+  </tbody></table></div><p class="hint">* = ຍັງບໍ່ໄດ້ນັບ ໃຊ້ຍອດຄາດວ່າເຫຼືອແທນ</p>`;
+}
+const ym_ = A => A.first.start.slice(0,7);
+
+/* ---------- ຂອງເສຍ ---------- */
+const wasteVal = x => { const it=itemById(x.itemId); if(!it) return 0; const w=state.weeks.find(w=>x.date>=w.start&&x.date<=wEnd(w)); const r=w&&w.rows[x.itemId]; return n0(x.qty)*(r&&r.price!=null?r.price:it.price); };
+function itemOptions(sel){
+  return CATS.map(c=>`<optgroup label="${c.name}">${state.items.filter(i=>i.cat===c.id&&i.active).map(i=>`<option value="${i.id}" ${i.id===sel?'selected':''}>${esc(i.name)} (${esc(i.unit)})</option>`).join('')}</optgroup>`).join('');
+}
+function V_waste(){
+  const w=curWeek();
+  const ms=Array.from(new Set([...monthsList(),...state.waste.map(x=>x.date.slice(0,7))])).sort();
+  if(!ui.wmonth || !ms.includes(ui.wmonth)) ui.wmonth = ms[ms.length-1] || toISO(new Date()).slice(0,7);
+  const list=state.waste.filter(x=>x.date.slice(0,7)===ui.wmonth).sort((a,b)=>a.date<b.date?1:-1);
+  const total=list.reduce((s,x)=>s+wasteVal(x),0);
+  const byReason={}; list.forEach(x=>byReason[x.reason]=(byReason[x.reason]||0)+wasteVal(x));
+  const today=toISO(new Date());
+  const def = w ? (today>=w.start&&today<=wEnd(w)?today:w.start) : today;
+  return `<div class="view-title"><div><h2>ຂອງເສຍ</h2><p>ແທນຊີດ Wastage form — ບັນທຶກປະຈຳວັນ. ຂອງເສຍຖືກນັບລວມໃນ "ໃຊ້ໄປ" ຂອງການນັບສະຕັອກຢູ່ແລ້ວ; ແຖບນີ້ໃຊ້ເພື່ອຕິດຕາມວ່າເສຍຫຼາຍປານໃດ ແລະ ເພາະຫຍັງ</p></div>
+    <div class="actions"><select data-f="wmonth">${ms.map(m=>`<option value="${m}" ${m===ui.wmonth?'selected':''}>${monthName(m)}</option>`).join('')}</select><button class="btn" data-act="exportWaste">ດາວໂຫຼດ CSV</button></div></div>
+  <div class="grid two">
+   <div class="card"><h3>ບັນທຶກຂອງເສຍໃໝ່</h3>
+    <div class="row cols2"><div><label class="f">ວັນທີ</label><input type="date" id="wDate" value="${def}"></div>
+    <div><label class="f">ຈຳນວນ</label><input type="text" inputmode="decimal" id="wQty" placeholder="0"></div></div>
+    <div class="sp"></div><label class="f">ລາຍການ</label><select id="wItem" style="width:100%">${itemOptions()}</select>
+    <div class="sp"></div><div class="row cols2"><div><label class="f">ສາເຫດ</label><select id="wReason" style="width:100%">${REASONS.map(r=>`<option>${r}</option>`).join('')}</select></div>
+    <div><label class="f">ໝາຍເຫດ</label><input type="text" id="wNote"></div></div>
+    <div class="mfoot" style="justify-content:flex-start"><button class="btn primary" data-act="addWaste">ບັນທຶກຂອງເສຍ</button></div></div>
+   <div class="card"><h3>ສະຫຼຸບ ${monthName(ui.wmonth)}</h3><div class="kpi"><div class="val">${fm(total)} ₭</div><div class="sub">${list.length} ລາຍການ</div></div><div class="sp"></div>
+    <table class="plain"><tbody>${Object.entries(byReason).map(([r,v])=>`<tr><td>${esc(r)}</td><td class="num">${fm(v)} ₭</td></tr>`).join('')||'<tr><td class="muted">ຍັງບໍ່ມີຂໍ້ມູນ</td><td></td></tr>'}</tbody></table></div>
+  </div><div class="sp"></div>
+  <div class="tbl-wrap"><table class="plain"><thead><tr><th>ວັນທີ</th><th>ລາຍການ</th><th>ຈຳນວນ</th><th>ມູນຄ່າ (₭)</th><th>ສາເຫດ</th><th>ໝາຍເຫດ</th><th></th></tr></thead><tbody>
+   ${list.map(x=>{const it=itemById(x.itemId);return `<tr><td>${dShort(x.date)} ${x.date.slice(0,4)}</td><td>${esc(it?it.name:'(ລຶບແລ້ວ)')}</td><td class="num">${fn(x.qty)} ${esc(it?it.unit:'')}</td><td class="num">${fm(wasteVal(x))}</td><td>${esc(x.reason)}</td><td>${esc(x.note||'')}</td><td><button class="btn sm danger" data-act="delWaste" data-i="${x.id}">ລຶບ</button></td></tr>`}).join('')||'<tr><td colspan="7" class="muted" style="text-align:center;padding:20px">ຍັງບໍ່ມີການບັນທຶກຂອງເສຍໃນເດືອນນີ້</td></tr>'}
+  </tbody></table></div>`;
+}
+
+/* ---------- ສັ່ງຊື້ ---------- */
+function usagePerDay(id){
+  let u=0,d=0; sortedWeeks().forEach(w=>{ const c=calc(w,id); if(c.counted && c.usage>0){ u+=c.usage; d+=w.days; } else if(c.counted){ d+=w.days; } });
+  return d>0?u/d:null;
+}
+function V_order(){
+  const w=curWeek(); if(!w) return noWeek();
+  const target=ui.target||14;
+  const rows=activeItems(w).map(it=>{
+    const c=calc(w,it.id), stock=c.end!=null?c.end:c.total, pd=usagePerDay(it.id);
+    const needTarget = pd!=null ? Math.max(0, Math.ceil(pd*target - stock)) : null;
+    const needMin = it.min!=null ? Math.max(0, Math.ceil(it.min - stock)) : 0;
+    const low = it.min!=null && stock<it.min;
+    return {it,stock,pd,cover:(pd>0)?stock/pd:null,low,suggest:Math.max(needMin,needTarget||0),needTarget,needMin};
+  });
+  const shown = ui.onlyLow ? rows.filter(r=>r.low || r.suggest>0) : rows;
+  return `<div class="view-title"><div><h2>ສັ່ງຊື້</h2><p>ຄຳນວນຈາກຍອດຄົງເຫຼືອຂອງ ${esc(weekFull(w))} ແລະ ອັດຕາໃຊ້ສະເລ່ຍຕໍ່ວັນ ຂອງທຸກອາທິດທີ່ນັບແລ້ວ</p></div>
+   <div class="actions"><button class="btn primary" data-act="poFromSuggest">ສ້າງໃບສັ່ງຊື້ຈາກລາຍການນີ້</button><button class="btn" data-act="copyOrder">ຄັດລອກລາຍການສັ່ງຊື້</button><button class="btn" data-act="exportOrder">ດາວໂຫຼດ CSV</button></div></div>
+  <div class="card" style="margin-bottom:14px"><div class="row cols2"><div><label class="f">ຕ້ອງການໃຫ້ມີສະຕັອກພໍໃຊ້ຈັກວັນ</label><input type="number" min="1" max="90" data-f="target" value="${target}"></div>
+   <div style="display:flex;align-items:flex-end"><label style="display:flex;gap:6px;align-items:center;cursor:pointer;min-height:40px"><input type="checkbox" data-f="onlyLow" ${ui.onlyLow?'checked':''}> ສະເພາະລາຍການທີ່ຄວນສັ່ງ</label></div></div>
+   <p class="hint" style="margin:8px 0 0">ຈຳນວນແນະນຳ = ຫຼາຍກວ່າລະຫວ່າງ (ໃຊ້ສະເລ່ຍ/ວັນ × ຈຳນວນວັນ − ສະຕັອກຄົງເຫຼືອ) ແລະ (ຂັ້ນຕ່ຳ − ສະຕັອກຄົງເຫຼືອ). ຕັ້ງ "ຂັ້ນຕ່ຳ" ຂອງແຕ່ລະລາຍການໄດ້ໃນຕາຕະລາງລຸ່ມນີ້.</p></div>
+  <div class="tbl-wrap"><table class="plain"><thead><tr><th>ລາຍການ</th><th>ໜ່ວຍ</th><th>ຄົງເຫຼືອ</th><th>ໃຊ້ສະເລ່ຍ/ວັນ</th><th>ພໍໃຊ້ (ວັນ)</th><th>ຂັ້ນຕ່ຳ</th><th>ຄວນສັ່ງ</th><th></th></tr></thead><tbody>
+  ${shown.map(r=>`<tr><td>${esc(r.it.name)}</td><td class="muted">${esc(r.it.unit)}</td><td class="num">${fn(r.stock)}</td><td class="num">${r.pd!=null?fn(r.pd):'—'}</td><td class="num ${r.cover!=null&&r.cover<7?'neg':''}">${r.cover!=null?fn(r.cover):'—'}</td>
+   <td><input class="cell" type="text" inputmode="decimal" data-min="${r.it.id}" value="${r.it.min!=null?fq(r.it.min):''}"></td>
+   <td class="num"><b>${r.suggest>0?fn(r.suggest):'—'}</b></td><td>${r.low?'<span class="chip bad">ຕ່ຳກວ່າຂັ້ນຕ່ຳ</span>':''}</td></tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:20px">ບໍ່ມີລາຍການທີ່ຕ້ອງສັ່ງ</td></tr>'}
+  </tbody></table></div>`;
+}
+function orderRows(){
+  const w=curWeek(); const target=ui.target||14;
+  return activeItems(w).map(it=>{
+    const c=calc(w,it.id), stock=c.end!=null?c.end:c.total, pd=usagePerDay(it.id);
+    const s=Math.max(it.min!=null?Math.ceil(it.min-stock):0, pd!=null?Math.ceil(pd*target-stock):0,0);
+    return {it,stock,s};
+  }).filter(r=>r.s>0);
+}
+
+/* ---------- ລາຍການສິນຄ້າ ---------- */
+function V_items(){
+  return `<div class="view-title"><div><h2>ລາຍການສິນຄ້າ</h2><p>ເພີ່ມ/ແກ້ໄຂ/ເຊື່ອງສິນຄ້າ ແລະ ລາຄາ. ການແກ້ລາຄາຈະໃຊ້ກັບອາທິດທີ່ເລືອກ ແລະ ອາທິດຖັດໄປທີ່ຍັງບໍ່ລັອກ (ອາທິດເກົ່າຍັງເປັນລາຄາເດີມ)</p></div>
+   <div class="actions"><button class="btn primary" data-act="addItem">+ ເພີ່ມສິນຄ້າ</button></div></div>
+  ${CATS.map(c=>`<h3 style="margin:16px 0 8px">${c.name}</h3><div class="tbl-wrap"><table class="plain"><thead><tr><th>ຊື່ສິນຄ້າ</th><th>ບາໂຄດ</th><th>ປະເພດສັ່ງຊື້</th><th>ໜ່ວຍ</th><th>ຂະໜາດຕໍ່ກ່ອງ</th><th>ລາຄາ/ໜ່ວຍ (₭)</th><th>ຂັ້ນຕ່ຳ</th><th></th></tr></thead><tbody>
+  ${state.items.filter(i=>i.cat===c.id).map(i=>`<tr style="${i.active?'':'opacity:.5'}"><td><input class="txt" data-it="${i.id}" data-p="name" value="${esc(i.name)}"></td><td><input class="txt" data-it="${i.id}" data-p="barcode" value="${esc(i.barcode||'')}" placeholder="ສະແກນ/ພິມ" inputmode="numeric" style="min-width:140px"></td>
+   <td><select data-it="${i.id}" data-p="otype">${OTYPES.map(o=>`<option value="${o.id}" ${otypeOf(i)===o.id?'selected':''}>${o.name}</option>`).join('')}</select></td>
+   <td><input class="txt" data-it="${i.id}" data-p="unit" value="${esc(i.unit)}" style="min-width:110px"></td>
+   <td><input class="cell" type="text" inputmode="numeric" data-it="${i.id}" data-p="pack" value="${i.pack!=null?i.pack:''}" placeholder="-"></td>
+   <td><input class="cell wide" type="text" inputmode="decimal" data-it="${i.id}" data-p="price" value="${fi(i.price)}"></td>
+   <td><input class="cell" type="text" inputmode="decimal" data-it="${i.id}" data-p="min" value="${i.min!=null?fq(i.min):''}" placeholder="-"></td>
+   <td style="white-space:nowrap"><button class="btn sm" data-act="toggleItem" data-i="${i.id}">${i.active?'ເຊື່ອງ':'ສະແດງ'}</button> <button class="btn sm danger" data-act="delItem" data-i="${i.id}">ລຶບ</button></td></tr>`).join('')}
+  </tbody></table></div>`).join('')}`;
+}
+
+/* ---------- ຕັ້ງຄ່າ ---------- */
+function V_settings(){
+  return `<div class="view-title"><div><h2>ຕັ້ງຄ່າ & ສຳຮອງຂໍ້ມູນ</h2><p>ຂໍ້ມູນຖືກບັນທຶກໃນບຣາວເຊີຂອງເຄື່ອງນີ້ເທົ່ານັ້ນ — ຄວນດາວໂຫຼດໄຟລ໌ສຳຮອງເປັນປະຈຳ (ຢ່າງໜ້ອຍທຸກທ້າຍອາທິດ)</p></div></div>
+  <div class="grid two">
+   <div class="card"><h3>ຂໍ້ມູນສາຂາ</h3><label class="f">ຊື່ສາຂາ</label><input type="text" data-f="branch" value="${esc(state.settings.branch)}"><div class="sp"></div>
+    <label class="f">ຜູ້ຮັບຜິດຊອບເລີ່ມຕົ້ນ (ໃຊ້ເປັນຄ່າຕັ້ງຕົ້ນຂອງອາທິດໃໝ່)</label><input type="text" data-f="staff" value="${esc(state.settings.staff)}"><div class="sp"></div>
+    <label class="f">ຜູ້ນັບຂອງອາທິດທີ່ເລືອກ</label><input type="text" data-f="weekBy" value="${esc((curWeek()||{}).by||'')}"></div>
+   <div class="card"><h3>ສຳຮອງ / ກູ້ຄືນຂໍ້ມູນ</h3><div class="actions"><button class="btn primary" data-act="backup">ດາວໂຫຼດໄຟລ໌ສຳຮອງ (.json)</button><button class="btn" data-act="restore">ກູ້ຄືນຈາກໄຟລ໌</button><input type="file" id="restoreFile" accept=".json,application/json" class="hide"></div>
+    <p class="hint">ໄຟລ໌ສຳຮອງໃຊ້ຍ້າຍຂໍ້ມູນໄປເຄື່ອງອື່ນ ຫຼື ກູ້ຄືນຖ້າບຣາວເຊີຖືກລ້າງ.</p><div class="sp"></div>
+    <div class="actions"><button class="btn" data-act="exportAll">ດາວໂຫຼດທຸກອາທິດ (CSV)</button></div></div>
+   <div class="card"><h3>ແຈ້ງເຕືອນນັບສະຕັອກທຸກວັນຈັນ</h3>
+    <label style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-bottom:10px"><input type="checkbox" data-f="remindOn" ${state.settings.remindOn?'checked':''}> ເປີດການແຈ້ງເຕືອນ (ແບນເນີໃນເວັບ ທຸກຄັ້ງທີ່ເປີດ ໃນວັນຈັນ)</label>
+    <label class="f">ເວລາແຈ້ງເຕືອນ</label><input type="time" data-f="remindTime" value="${esc(state.settings.remindTime||'08:00')}" style="max-width:160px">
+    <div class="sp"></div><div class="actions"><button class="btn" data-act="enableNotif">ເປີດແຈ້ງເຕືອນໃນ browser</button><button class="btn primary" data-act="icsReminder">ດາວໂຫຼດປະຕິທິນ (.ics) ເຕືອນທຸກວັນຈັນ</button></div>
+    <p class="hint" id="notifState" style="margin-top:8px">${notifStateText()}</p>
+    <p class="hint">ແຈ້ງເຕືອນ browser ເຮັດວຽກໄດ້ເມື່ອເວັບເປີດຄ້າງໄວ້ເທົ່ານັ້ນ. ເພື່ອໃຫ້ເຕືອນໃນມືຖືເຖິງແມ່ນບໍ່ໄດ້ເປີດເວັບ ໃຫ້ດາວໂຫຼດໄຟລ໌ .ics ແລ້ວເປີດເພີ່ມເຂົ້າປະຕິທິນ (Google Calendar / iPhone) — ຈະເຕືອນຊ້ຳທຸກອາທິດ.</p></div>
+   <div class="card"><h3>ເລີ່ມໃໝ່</h3><p class="hint">ກັບຄືນໄປໃຊ້ຂໍ້ມູນຕົ້ນສະບັບຈາກໄຟລ໌ Excel, ຫຼື ລຶບຂໍ້ມູນອາທິດ/ຂອງເສຍທັງໝົດແຕ່ເກັບລາຍການສິນຄ້າ ແລະ ລາຄາໄວ້.</p>
+    <div class="actions"><button class="btn danger" data-act="resetSeed">ໃຊ້ຂໍ້ມູນຈາກ Excel ໃໝ່</button><button class="btn danger" data-act="clearWeeks">ລຶບຂໍ້ມູນອາທິດທັງໝົດ</button></div></div>
+   <div class="card"><h3>ວິທີໃຊ້ໄວໆ</h3><ol style="margin:0;padding-left:20px;display:grid;gap:4px">
+    <li>ຕົ້ນອາທິດ: ກົດ <b>ເປີດອາທິດໃໝ່</b> — ຍອດຍົກມາຈະມາຈາກຍອດນັບທ້າຍອາທິດກ່ອນອັດຕະໂນມັດ</li>
+    <li>ມີສິນຄ້າເຂົ້າ: ກົດ <b>ບັນທຶກຮັບເຂົ້າ</b> ເລືອກວັນ ແລະ ລາຍການ</li>
+    <li>ທ້າຍອາທິດ (ວັນຈັນ): ແຖບ <b>ນັບສະຕັອກ</b> → ພິມຍອດທີ່ນັບໄດ້ຈິງທຸກລາຍການ → <b>ນັບຄົບແລ້ວ</b></li>
+    <li>ປ້ອນຍອດຂາຍໃນແຖບ <b>ຍອດຂາຍ & ຕົ້ນທຶນ</b> ເພື່ອເບິ່ງ % ຕົ້ນທຶນ</li>
+    <li>ທ້າຍເດືອນ: ແຖບ <b>ສະຫຼຸບເດືອນ</b> → ກວດຂັ້ນຕອນ → <b>ເປີດເດືອນຖັດໄປ</b></li></ol></div>
+  </div>`;
+}
+
+/* ============ ອັບເດດຄ່າທີ່ຄຳນວນແລ້ວ ໂດຍບໍ່ສ້າງ DOM ໃໝ່ ============ */
+function refreshCalc(){
+  const w=curWeek(); if(!w) return;
+  const S=wsum(w);
+  $$('[data-o]').forEach(el=>{
+    const id=el.dataset.i, o=el.dataset.o, c=calc(w,id), r=w.rows[id]||{};
+    switch(o){
+      case 'begin': if(document.activeElement!==el){ el.value=fq(c.begin); } el.classList.toggle('auto', r.begin==null); break;
+      case 'beginT': el.textContent=fn(c.begin); break;
+      case 'inn': el.textContent=fn(c.inn); break;
+      case 'out': el.textContent=fn(c.out); break;
+      case 'total': el.textContent=fn(c.total); break;
+      case 'usage': el.textContent=c.usage==null?'—':fn(c.usage); el.classList.toggle('neg',c.usage!=null&&c.usage<-1e-9); break;
+      case 'cost': el.textContent=c.usage==null?'—':fm(c.cost); break;
+      case 'endcell': el.classList.toggle('flag',c.usage!=null&&c.usage<-1e-9); el.classList.toggle('done-cell',c.counted&&!(c.usage<-1e-9)&&c.end!=null); break;
+      case 'status': {
+        const neg=c.usage!=null&&c.usage<-1e-9;
+        el.textContent = neg?'ນັບເກີນຍອດຄາດ':(c.end!=null?'ນັບແລ້ວ':(c.counted?'ບໍ່ມີຂອງ':'ຍັງບໍ່ໄດ້ນັບ'));
+        el.className='chip '+(neg?'bad':(c.counted?'ok':'warn')); break; }
+      case 'card': {
+        const neg=c.usage!=null&&c.usage<-1e-9;
+        el.classList.toggle('neg',neg); el.classList.toggle('done',c.counted&&!neg); el.classList.toggle('todo',!c.counted); break; }
+    }
+  });
+  $$('[data-ct]').forEach(el=>{
+    const b=S.by[el.dataset.cat];
+    el.textContent = el.dataset.ct==='cost' ? fm(b.cost) : `${b.counted}/${b.count}`;
+  });
+  const pt=$('#prog-txt'); if(pt){ pt.textContent=`ນັບແລ້ວ ${S.counted} / ${S.count} ລາຍການ`; $('#prog-bar').style.width=(S.count?Math.round(S.counted/S.count*100):0)+'%'; $('#prog-wrap').classList.toggle('ok',S.counted>=S.count); $('#prog-cost').textContent=fm(S.cost); }
+  const tr=$('#tgtRes'); if(tr){ tr.innerHTML=targetHTML(w); const T=targetInfo(w), SL=salesOf(w);
+    $$('[data-dt]').forEach(el=>{ el.textContent=fm(el.dataset.dt==='all'?T.target:T.perT); });
+    $$('[data-dp]').forEach(el=>{ const k=el.dataset.dp; if(k==='all'){ el.textContent=fp(T.pct); } else { const v=w.daily&&w.daily[+k]; el.textContent=(v!=null&&T.perT>0)?fp(v/T.perT):'—'; el.classList.toggle('neg',v!=null&&T.perT>0&&v<T.perT); } });
+    const ds=$('[data-dsum]'); if(ds) ds.textContent=fm(SL.dsum); }
+  const ps=$('#profitSum'); if(ps) ps.innerHTML=profitSummary(w);
+  // ປ້າຍຕົວເລກແຈ້ງເຕືອນໃນແຖບ
+  const dot=$('.tab[data-v="count"]'); if(dot){ const d=$('.dot',dot); if(S.todo.length){ if(d) d.textContent=S.todo.length; else dot.insertAdjacentHTML('beforeend',`<span class="dot">${S.todo.length}</span>`); } else if(d) d.remove(); }
+}
+
+/* ============ ການດຳເນີນງານ ============ */
+function openNewWeek(){
+  const arr=sortedWeeks(); const last=arr[arr.length-1];
+  const start = last ? addDays(wEnd(last),1) : toISO(new Date());
+  const days = Math.min(7, (parseD(monthEnd(start))-parseD(start))/864e5+1);
+  const unc = last ? wsum(last).todo.length : 0;
+  openModal(`<h3>ເປີດອາທິດໃໝ່</h3>
+   ${unc?`<div class="banner warn">ອາທິດຫຼ້າສຸດຍັງບໍ່ໄດ້ນັບ ${unc} ລາຍການ — ຍອດຍົກມາຂອງລາຍການເຫຼົ່ານັ້ນຈະໃຊ້ "ຍອດຄາດວ່າເຫຼືອ"</div>`:''}
+   <div class="row cols2"><div><label class="f">ວັນເລີ່ມຕົ້ນ</label><input type="date" id="nwStart" value="${start}"></div><div><label class="f">ຈຳນວນວັນ (1–7)</label><input type="number" id="nwDays" min="1" max="7" value="${days}"></div></div>
+   <p class="hint" id="nwPrev"></p>
+   <p class="hint">ອາທິດຂອງຮ້ານນັບ ອັງຄານ → ຈັນ. ຖ້າອາທິດຂ້າມເດືອນ ໃຫ້ຕັດຢູ່ວັນສຸດທ້າຍຂອງເດືອນ ແລ້ວເປີດອາທິດຕໍ່ໄປຕາມເດືອນໃໝ່. ຍອດຍົກມາ = ຍອດນັບທ້າຍອາທິດກ່ອນ. ລາຄາຖືກຄັດລອກຈາກລາຍການສິນຄ້າ.</p>
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="createWeek">ສ້າງອາທິດ</button></div>`);
+  const upd=()=>{ const s=$('#nwStart').value, d=Math.max(1,Math.min(7,+$('#nwDays').value||1)); if(s) $('#nwPrev').textContent=`${WD[dow(s)]} ${dShort(s)} → ${WD[dow(addDays(s,d-1))]} ${dShort(addDays(s,d-1))}`; };
+  $('#nwStart').oninput=upd; $('#nwDays').oninput=upd; upd();
+}
+function createWeek(){
+  const start=$('#nwStart').value; const days=Math.max(1,Math.min(7,Math.round(+$('#nwDays').value||7)));
+  if(!start){ toast('ກະລຸນາເລືອກວັນເລີ່ມຕົ້ນ'); return; }
+  const end=addDays(start,days-1);
+  if(state.weeks.some(w=>!(end<w.start||start>wEnd(w)))){ toast('ວັນທີຊ້ອນກັບອາທິດທີ່ມີຢູ່ແລ້ວ'); return; }
+  const last=sortedWeeks().filter(w=>w.start<start).pop();
+  const lines = (last&&last.sales&&last.sales.lines || SEED.weeks[0].sales.lines).map(l=>({id:l.id,label:l.label,g:l.g,amount:null}));
+  const rows={}; state.items.filter(i=>i.active).forEach(it=>{ rows[it.id]={begin:null,tfIn:null,d:[],tfOut:null,end:null,price:it.price}; });
+  const w={id:uid('w'),start,days,by:state.settings.staff,locked:false,rows,sales:{lines,discount:0},labour:{},note:'',target:last?n0(last.target):0,daily:[]};
+  state.weeks.push(w); ui.wid=w.id; saveUI(); save(); closeModal();
+  if(last && last.start.slice(0,7)!==start.slice(0,7)) ui.month=start.slice(0,7);
+  toast('ເປີດອາທິດໃໝ່ແລ້ວ — ຍອດຍົກມາດຶງຈາກຍອດນັບອາທິດກ່ອນ'); setTab('count');
+}
+function setTab(t){ ui.tab=t; saveUI(); render(); window.scrollTo({top:0}); }
+function setRow(w,id,k,val){
+  const r=rowOf(w,id,true);
+  if(k==='begin'||k==='tfIn'||k==='tfOut'||k==='end'||k==='price') r[k]=val;
+  else if(/^d\d$/.test(k)){ const i=+k.slice(1); r.d=r.d||[]; while(r.d.length<=i) r.d.push(null); r.d[i]=val; }
+}
+function onCell(t){
+  const w=curWeek(); if(!w||w.locked) return;
+  const v=parseExpr(t.value);
+  const id=t.dataset.i, k=t.dataset.k, cur=(w.rows[id]||{})[k];
+  if(Number.isNaN(v)){ toast('ພິມໄດ້ສະເພາະຕົວເລກ ຫຼື ສູດ ເຊັ່ນ 27*50+31'); t.value=fq(k.startsWith('d')?(((w.rows[id]||{}).d||[])[+k.slice(1)]):cur); return; }
+  if(k==='price'){
+    const val = v==null?0:v; setRow(w,id,'price',val); const it=itemById(id); if(it) it.price=val;
+  } else setRow(w,id,k,v);
+  t.value = v==null?'':(k==='price'?fi(v):fq(v));
+  save(); refreshCalc();
+  if(k==='end') renderChromeBadge();
+}
+function renderChromeBadge(){ /* ຕົວເລກແຈ້ງເຕືອນຢູ່ໃນ refreshCalc ແລ້ວ */ }
+function onField(t){
+  const f=t.dataset.f, w=curWeek();
+  const needW = ['wTarget','discount','labCost','labHours','note','weekBy'];
+  if(needW.includes(f)){
+    if(!w||w.locked) return;
+    if(f==='note'||f==='weekBy'){ if(f==='note') w.note=t.value; else w.by=t.value; save(); return; }
+    const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; }
+    if(f==='wTarget'){ w.target=v||0; }
+    if(f==='discount'){ w.sales.discount=v||0; }
+    if(f==='labCost'){ w.labour=w.labour||{}; w.labour.cost=v; }
+    if(f==='labHours'){ w.labour=w.labour||{}; w.labour.hours=v; }
+    t.value=v==null?'':fi(v); save(); refreshCalc(); return;
+  }
+  if(f==='remindOn'){ state.settings.remindOn=t.checked; save(); render(); return; }
+  if(f==='remindTime'){ state.settings.remindTime=t.value||'08:00'; state.settings.lastNotify=''; save(); return; }
+  if(f==='branch'){ state.settings.branch=t.value; save(); renderChrome(); return; }
+  if(f==='staff'){ state.settings.staff=t.value; save(); return; }
+  if(f==='todo'){ ui.todo=t.checked; saveUI(); render(); return; }
+  if(f==='poOnly'){ ui.poOnly=t.checked; saveUI(); render(); return; }
+  if(f==='onlyLow'){ ui.onlyLow=t.checked; saveUI(); render(); return; }
+  if(f==='target'){ ui.target=Math.max(1,Math.min(90,+t.value||14)); saveUI(); render(); return; }
+  if(f==='month'){ ui.month=t.value; saveUI(); render(); return; }
+  if(f==='wmonth'){ ui.wmonth=t.value; saveUI(); render(); return; }
+}
+function lockWeek(on){ const w=curWeek(); if(!w) return; w.locked=on; save(); render(); toast(on?'ລັອກອາທິດແລ້ວ':'ປົດລັອກແລ້ວ'); }
+
+/* ໜ້າຕ່າງຮັບເຂົ້າ */
+function openReceive(){
+  const w=curWeek(); if(!w) return;
+  const today=toISO(new Date());
+  const days=[...Array(w.days).keys()].map(k=>addDays(w.start,k));
+  const defD = days.includes(today)?today:days[0];
+  openModal(`<h3>ບັນທຶກຮັບເຂົ້າ (ຂອງເຂົ້າຮ້ານ)</h3>
+   <label class="f">ວັນທີ່ຮັບເຂົ້າ</label><select id="rcDay" style="width:100%">${days.map(d=>`<option value="${d}" ${d===defD?'selected':''}>${WD[dow(d)]} ${dShort(d)}</option>`).join('')}<option value="tf">ໂອນເຂົ້າ (T/F In) ຕອນຕົ້ນອາທິດ</option></select>
+   <div class="sp"></div><label class="f">ລາຍການ</label><select id="rcItem" style="width:100%">${itemOptions()}</select>
+   <div class="sp"></div><label class="f">ຈຳນວນທີ່ຮັບເຂົ້າ (ພິມສູດໄດ້)</label><input type="text" inputmode="decimal" id="rcQty" placeholder="0">
+   <div class="mfoot"><button class="btn" data-act="closeModal">ປິດ</button><button class="btn primary" data-act="saveReceive">ບັນທຶກ ແລະ ເພີ່ມອັນຕໍ່ໄປ</button></div><p class="hint" id="rcLog"></p>`);
+}
+function saveReceive(){
+  const w=curWeek(); if(!w||w.locked) return;
+  const q=parseExpr($('#rcQty').value); if(q==null||Number.isNaN(q)||q<=0){ toast('ກະລຸນາໃສ່ຈຳນວນທີ່ຖືກຕ້ອງ'); return; }
+  const id=$('#rcItem').value, d=$('#rcDay').value, r=rowOf(w,id,true), it=itemById(id);
+  if(d==='tf') r.tfIn=n0(r.tfIn)+q;
+  else { const k=Math.round((parseD(d)-parseD(w.start))/864e5); r.d=r.d||[]; while(r.d.length<=k) r.d.push(null); r.d[k]=n0(r.d[k])+q; }
+  save(); refreshCalc();
+  const log=$('#rcLog'); log.textContent = `✓ ບັນທຶກແລ້ວ: ${it.name} +${fn(q)} ${it.unit}`; $('#rcQty').value=''; $('#rcQty').focus();
+  if(ui.tab!=='count'&&ui.tab!=='sheet') {} 
+  if(ui.tab==='sheet') { const cell=$(`input[data-i="${id}"][data-k="${d==='tf'?'tfIn':'d'+Math.round((parseD(d)-parseD(w.start))/864e5)}"]`); if(cell) cell.value=fq(d==='tf'?r.tfIn:r.d[Math.round((parseD(d)-parseD(w.start))/864e5)]); }
+}
+/* ຄິດໄລ່ກ່ອງ */
+function openPack(id){
+  const it=itemById(id); if(!it) return;
+  openModal(`<h3>ຄິດໄລ່ຈຳນວນ — ${esc(it.name)}</h3><p class="hint">${esc(it.unit)}</p>
+   <div class="row cols2"><div><label class="f">ຈຳນວນກ່ອງ / ແພັກ</label><input type="text" inputmode="decimal" id="pkBox" value="0"></div><div><label class="f">ຈຳນວນຕໍ່ກ່ອງ</label><input type="text" inputmode="decimal" id="pkPer" value="${it.pack||1}"></div></div>
+   <div class="sp"></div><label class="f">ເສດ (ທີ່ຍັງບໍ່ເປັນກ່ອງ)</label><input type="text" inputmode="decimal" id="pkLoose" value="0">
+   <p style="font-size:18px;margin:14px 0 0">ລວມ = <b id="pkRes">0</b> ${esc((it.unit.split(/[\s*]/)[0])||'')}</p>
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="applyPack" data-i="${id}">ໃຊ້ຄ່ານີ້ເປັນຍອດນັບໄດ້ຈິງ</button></div>`);
+  const upd=()=>{ const b=parseExpr($('#pkBox').value)||0, p=parseExpr($('#pkPer').value)||0, l=parseExpr($('#pkLoose').value)||0; $('#pkRes').textContent=fn(b*p+l); $('#pkRes').dataset.v=b*p+l; };
+  ['pkBox','pkPer','pkLoose'].forEach(i=>$('#'+i).oninput=upd); upd();
+}
+/* ພິມໃບນັບ */
+function printCount(){
+  const w=curWeek(); if(!w) return;
+  const rows=activeItems(w).map((it,i)=>{ const c=calc(w,it.id); return `<tr><td>${i+1}</td><td>${esc(it.name)}</td><td>${esc(it.unit)}</td><td>${fn(c.total)}</td><td class="e"></td><td></td></tr>`; }).join('');
+  $('#printArea').innerHTML=`<h2>ໃບນັບສະຕັອກ — ${esc(state.settings.branch)}</h2><div style="margin-bottom:8px">${esc(weekFull(w))} &nbsp;·&nbsp; ວັນທີນັບ: ____/____/________ &nbsp;·&nbsp; ຜູ້ນັບ: ____________________ &nbsp;·&nbsp; ຜູ້ກວດ: ____________________</div>
+   <table><thead><tr><th>NO</th><th>ລາຍການ</th><th>ໜ່ວຍ</th><th>ຄາດວ່າເຫຼືອ</th><th style="width:20%">ນັບໄດ້ຈິງ</th><th style="width:20%">ໝາຍເຫດ</th></tr></thead><tbody>${rows}</tbody></table>`;
+  window.print();
+}
+/* ສົ່ງອອກ */
+function weekCSV(w){
+  const days=[...Array(w.days).keys()].map(k=>addDays(w.start,k));
+  const rows=[[`${state.settings.branch}`,weekFull(w)],['ໝວດ','ລາຍການ','ໜ່ວຍ','ຍອດຍົກມາ','ໂອນເຂົ້າ',...days.map(d=>`${WD[dow(d)]} ${dnum(d)}`),'ໂອນອອກ','ລວມ','ນັບໄດ້ຈິງ','ໃຊ້ໄປ','ລາຄາ/ໜ່ວຍ','ມູນຄ່າ']];
+  CATS.forEach(c=>activeItems(w).filter(i=>i.cat===c.id).forEach(it=>{ const c2=calc(w,it.id), r=w.rows[it.id]||{d:[]};
+    rows.push([c.en,it.name,it.unit,c2.begin,r.tfIn??'',...days.map((_,k)=>(r.d&&r.d[k])??''),r.tfOut??'',c2.total,c2.end??'',c2.usage??'',c2.price,c2.usage!=null?Math.round(c2.cost):'']); }));
+  const S=wsum(w); rows.push([],['ຕົ້ນທຶນລວມ','','','','','','','','','','','',Math.round(S.cost)]);
+  return rows;
+}
+function backup(){ download(`inventory-backup-${toISO(new Date())}.json`, JSON.stringify(state,null,1), 'application/json'); toast('ດາວໂຫຼດໄຟລ໌ສຳຮອງແລ້ວ'); }
+
+/* ============ ຕົວຈັດການເຫດການ ============ */
+document.addEventListener('click', e=>{
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act, id=b.dataset.i, v=b.dataset.v, w=curWeek();
+  switch(a){
+    case 'tab': setTab(v); break;
+    case 'closeModal': closeModal(); break;
+    case 'newWeek': openNewWeek(); break;
+    case 'createWeek': createWeek(); break;
+    case 'lock': lockWeek(true); break;
+    case 'unlock': lockWeek(false); break;
+    case 'cat': ui.cat=v; saveUI(); render(); break;
+    case 'step': { if(!w||w.locked) break; const c=calc(w,id); const base = c.end!=null?c.end:c.total; const nv=Math.max(0,Math.round((base+parseFloat(b.dataset.d))*1000)/1000); setRow(w,id,'end',nv); const inp=$(`input[data-k="end"][data-i="${id}"]`); if(inp) inp.value=fq(nv); save(); refreshCalc(); break; }
+    case 'same': { if(!w||w.locked) break; const c=calc(w,id); setRow(w,id,'end',Math.round(c.total*1000)/1000); const inp=$(`input[data-k="end"][data-i="${id}"]`); if(inp) inp.value=fq(c.total); save(); refreshCalc(); break; }
+    case 'packcalc': openPack(id); break;
+    case 'applyPack': { const val=+$('#pkRes').dataset.v; closeModal(); if(w&&!w.locked){ setRow(w,id,'end',val); const inp=$(`input[data-k="end"][data-i="${id}"]`); if(inp) inp.value=fq(val); save(); refreshCalc(); toast('ບັນທຶກຍອດນັບແລ້ວ'); } break; }
+    case 'receive': openReceive(); break;
+    case 'saveReceive': saveReceive(); break;
+    case 'printCount': printCount(); break;
+    case 'finishCount': {
+      const S=wsum(w);
+      if(S.todo.length){ confirmBox('ຍັງມີລາຍການທີ່ບໍ່ໄດ້ນັບ',`ຍັງເຫຼືອ ${S.todo.length} ລາຍການ (${S.todo.slice(0,5).map(i=>esc(i.name)).join(', ')}${S.todo.length>5?'...':''}). ຕ້ອງການເບິ່ງສະເພາະລາຍການທີ່ຍັງບໍ່ໄດ້ນັບບໍ?`,()=>{ui.todo=true;saveUI();render();},'ເບິ່ງລາຍການທີ່ຍັງເຫຼືອ'); }
+      else if(S.neg.length){ toast(`ມີ ${S.neg.length} ລາຍການນັບເກີນຍອດຄາດ — ກວດຄືນກ່ອນ`); }
+      else { confirmBox('ນັບຄົບແລ້ວ',`ນັບສະຕັອກຄົບທຸກລາຍການ. ຕົ້ນທຶນທີ່ໃຊ້ໄປ <b>${fm(S.cost)} ₭</b>. ລັອກອາທິດນີ້ເພື່ອກັນການແກ້ໄຂໂດຍບັງເອີນ ແລະ ເປີດອາທິດຖັດໄປ?`,()=>{ w.locked=true; save(); openNewWeek(); },'ລັອກ ແລະ ເປີດອາທິດໃໝ່'); }
+      break; }
+    case 'delWeek': confirmBox('ລຶບອາທິດນີ້?',`ຂໍ້ມູນຂອງ <b>${esc(weekFull(w))}</b> ຈະຖືກລຶບຖາວອນ (ຄວນດາວໂຫຼດສຳຮອງກ່ອນ).`,()=>{ state.weeks=state.weeks.filter(x=>x.id!==w.id); ui.wid=null; save(); render(); toast('ລຶບອາທິດແລ້ວ'); },'ລຶບ'); break;
+    case 'addSale': if(w&&!w.locked){ w.sales.lines.push({id:uid('s'),label:'ລາຍການໃໝ່',g:'other',amount:null}); save(); render(); } break;
+    case 'delSale': if(w&&!w.locked){ w.sales.lines.splice(+id,1); save(); render(); } break;
+    case 'addWaste': {
+      const q=parseExpr($('#wQty').value), d=$('#wDate').value; if(!d||q==null||Number.isNaN(q)||q<=0){ toast('ກະລຸນາໃສ່ວັນທີ ແລະ ຈຳນວນ'); break; }
+      state.waste.push({id:uid('x'),date:d,itemId:$('#wItem').value,qty:q,reason:$('#wReason').value,note:$('#wNote').value}); ui.wmonth=d.slice(0,7); save(); saveUI(); render(); toast('ບັນທຶກຂອງເສຍແລ້ວ'); break; }
+    case 'delWaste': state.waste=state.waste.filter(x=>x.id!==id); save(); render(); break;
+    case 'addItem': openAddItem(); break;
+    case 'saveItem': saveItem(); break;
+    case 'toggleItem': { const it=itemById(id); it.active=!it.active; save(); render(); break; }
+    case 'delItem': { const it=itemById(id); confirmBox('ລຶບສິນຄ້າ?',`ລຶບ <b>${esc(it.name)}</b> ອອກຈາກທຸກອາທິດ ລວມທັງຂໍ້ມູນເກົ່າ. ຖ້າເປັນເພີ່ງແຕ່ເຊົາໃຊ້ ແນະນຳກົດ "ເຊື່ອງ" ແທນ.`,()=>{ state.items=state.items.filter(x=>x.id!==id); state.weeks.forEach(x=>delete x.rows[id]); state.waste=state.waste.filter(x=>x.itemId!==id); save(); render(); },'ລຶບຖາວອນ'); break; }
+    case 'exportWeek': download(`inventory-${w.start}.csv`, toCSV(weekCSV(w)), 'text/csv'); break;
+    case 'exportAll': { let rows=[]; sortedWeeks().forEach(x=>{ rows=rows.concat(weekCSV(x),[[],[]]); }); download(`inventory-all-${toISO(new Date())}.csv`, toCSV(rows), 'text/csv'); break; }
+    case 'exportProfit': { const S=wsum(w),SL=salesOf(w); const rows=[[weekFull(w)],['ຍອດຂາຍ','ກຸ່ມ','ກີບ'],...w.sales.lines.map(l=>[l.label,l.g,l.amount||0]),['ສ່ວນຫຼຸດ','',SL.disc],['ຍອດຂາຍສຸດທິ','',SL.net],[],['ຕົ້ນທຶນ','ກີບ','%'],...CATS.map(c=>[c.name,Math.round(S.by[c.id].cost),SL.net>0?(S.by[c.id].cost/SL.net*100).toFixed(2)+'%':'']),['ລວມ',Math.round(S.cost),SL.net>0?(S.cost/SL.net*100).toFixed(2)+'%':'']]; download(`profit-${w.start}.csv`,toCSV(rows),'text/csv'); break; }
+    case 'exportMonth': { const A=monthAgg(ui.month); const rows=[[monthName(ui.month)],['ໝວດ','ລາຍການ','ໜ່ວຍ','ຍອດຍົກມາ','ຮັບເຂົ້າ','ໂອນອອກ','ຍອດທ້າຍເດືອນ','ໃຊ້ໄປ',...A.W.map((_,i)=>'ມູນຄ່າ ອ.'+(i+1)),'ມູນຄ່າລວມ']]; A.rows.forEach(r=>rows.push([catOf(r.it.cat).en,r.it.name,r.it.unit,r.begin,r.inn,r.out,r.end,r.usage,...r.wk.map(Math.round),Math.round(r.cost)])); rows.push([],['ຍອດຂາຍສຸດທິ',A.sales.net],['ຕົ້ນທຶນລວມ',Math.round(A.cost)],['ຂອງເສຍ',Math.round(A.wasteCost)]); download(`inventory-month-${ui.month}.csv`,toCSV(rows),'text/csv'); break; }
+    case 'exportWaste': { const rows=[['ວັນທີ','ລາຍການ','ຈຳນວນ','ໜ່ວຍ','ມູນຄ່າ','ສາເຫດ','ໝາຍເຫດ']]; state.waste.filter(x=>x.date.slice(0,7)===ui.wmonth).forEach(x=>{const it=itemById(x.itemId)||{};rows.push([x.date,it.name,x.qty,it.unit,Math.round(wasteVal(x)),x.reason,x.note]);}); download(`waste-${ui.wmonth}.csv`,toCSV(rows),'text/csv'); break; }
+    case 'exportOrder': { const rows=[['ລາຍການ','ໜ່ວຍ','ຄົງເຫຼືອ','ຄວນສັ່ງ']]; orderRows().forEach(r=>rows.push([r.it.name,r.it.unit,r.stock,r.s])); download(`order-${toISO(new Date())}.csv`,toCSV(rows),'text/csv'); break; }
+    case 'copyOrder': { const t=`ລາຍການສັ່ງຊື້ ${state.settings.branch} (${toISO(new Date())})\n`+orderRows().map(r=>`- ${r.it.name}: ${fn(r.s)} ${r.it.unit}`).join('\n'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('ຄັດລອກແລ້ວ'),()=>{ openModal(`<h3>ຄັດລອກລາຍການ</h3><textarea rows="12" style="width:100%">${esc(t)}</textarea><div class="mfoot"><button class="btn" data-act="closeModal">ປິດ</button></div>`); }); break; }
+    case 'backup': backup(); break;
+    case 'enableNotif': enableNotif(); break;
+    case 'icsReminder': downloadICS(); break;
+    case 'goCount': setTab('count'); break;
+    case 'poNew': newPO(false); break;
+    case 'poFromSuggest': newPO(true); break;
+    case 'poOpen': ui.poId=id; ui.potype='all'; saveUI(); render(); break;
+    case 'poList': ui.poId=null; saveUI(); render(); break;
+    case 'poDel': confirmBox('ລຶບໃບສັ່ງຊື້?','ໃບສັ່ງຊື້ນີ້ຈະຖືກລຶບຖາວອນ.',()=>{ state.pos=state.pos.filter(p=>p.id!==id); if(ui.poId===id) ui.poId=null; save(); render(); },'ລຶບ'); break;
+    case 'potype': ui.potype=v; saveUI(); render(); break;
+    case 'poFill': poFill(); break;
+    case 'poClear': { const po=curPO(); if(po&&po.status!=='received'){ po.lines={}; save(); render(); } break; }
+    case 'poStatus': { const po=curPO(); if(po){ po.status=v; save(); render(); toast('ປ່ຽນສະຖານະເປັນ "'+PO_STATUS[v]+'"'); } break; }
+    case 'poPrint': printPO(curPO()); break;
+    case 'poCopy': poCopy(curPO()); break;
+    case 'poCSV': poCSV(curPO()); break;
+    case 'poReceive': poReceive(curPO()); break;
+    case 'poAssign': poAssign(); break;
+    case 'poDup': { const po=curPO(); const c=clone(po); c.id=uid('po'); const t=toISO(new Date()); c.date=t; c.delivery=addDays(t,2); c.status='draft'; c.receivedDate=null; c.no=`PO-${t.replace(/-/g,'').slice(2)}-${pad(state.pos.filter(p=>p.date===t).length+1)}`; state.pos.push(c); ui.poId=c.id; save(); saveUI(); render(); toast('ສຳເນົາໃບສັ່ງຊື້ແລ້ວ'); break; }
+    case 'restore': $('#restoreFile').click(); break;
+    case 'resetSeed': confirmBox('ໃຊ້ຂໍ້ມູນຈາກ Excel ໃໝ່?','ຂໍ້ມູນທີ່ແກ້ໄຂ/ເພີ່ມໃໝ່ທັງໝົດຈະຖືກແທນທີ່ດ້ວຍຂໍ້ມູນຕົ້ນສະບັບ.',()=>{ state=defaultState(); ui.wid=null; save(); render(); toast('ກັບຄືນຂໍ້ມູນຕົ້ນສະບັບແລ້ວ'); },'ແທນທີ່'); break;
+    case 'clearWeeks': confirmBox('ລຶບຂໍ້ມູນອາທິດທັງໝົດ?','ຈະເກັບລາຍການສິນຄ້າ ແລະ ລາຄາໄວ້ ແຕ່ລຶບຂໍ້ມູນອາທິດ, ຍອດຂາຍ ແລະ ຂອງເສຍທັງໝົດ. ຄວນດາວໂຫຼດສຳຮອງກ່ອນ.',()=>{ state.weeks=[]; state.waste=[]; ui.wid=null; save(); render(); },'ລຶບທັງໝົດ'); break;
+  }
+});
+document.addEventListener('change', e=>{
+  const t=e.target;
+  if(t.id==='weekSel'){ ui.wid=t.value; saveUI(); render(); return; }
+  if(t.matches('input.cell[data-k]')){ onCell(t); return; }
+  if(t.dataset.po){ const po=curPO(); if(!po||po.status==='received') return; po[t.dataset.po]=t.value; save(); if(t.dataset.po==='no') render(); return; }
+  if(t.dataset.pq||t.dataset.pp){ const po=curPO(); if(!po||po.status==='received') return; const id=t.dataset.pq||t.dataset.pp; const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; }
+    const it=itemById(id); const l=po.lines[id]||(po.lines[id]={qty:0,price:it.price}); if(t.dataset.pq){ l.qty=v||0; t.value=v?fq(v):''; } else { l.price=v||0; t.value=fi(v||0); }
+    save(); updatePOTotals(po); return; }
+  if(t.dataset.f){ onField(t); return; }
+  if(t.dataset.dl!==undefined){ const w=curWeek(); if(!w||w.locked) return; const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; }
+    w.daily=w.daily||[]; const k=+t.dataset.dl; while(w.daily.length<=k) w.daily.push(null); w.daily[k]=v; t.value=v==null?'':fi(v); save(); refreshCalc(); return; }
+  if(t.dataset.sl!==undefined){ const w=curWeek(); if(!w||w.locked) return; const l=w.sales.lines[+t.dataset.sl], p=t.dataset.p;
+    if(p==='amount'){ const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); t.value=fi(l.amount); return; } l.amount=v; t.value=v==null?'':fi(v); }
+    else l[p]=t.value;
+    save(); refreshCalc(); return; }
+  if(t.dataset.it){ const it=itemById(t.dataset.it), p=t.dataset.p;
+    if(p==='name'||p==='unit') it[p]=t.value.trim()||it[p];
+    else if(p==='otype') it.otype=t.value;
+    else if(p==='barcode'){ const b=t.value.trim(); const dup=b&&state.items.find(x=>x.id!==it.id&&x.barcode===b); if(dup){ toast('ບາໂຄດນີ້ຖືກໃຊ້ກັບ '+dup.name+' ແລ້ວ'); t.value=it.barcode||''; return; } it.barcode=b; }
+    else { const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); t.value=fq(it[p]); return; }
+      if(p==='price'){ it.price=v||0; const cw=curWeek(); sortedWeeks().filter(x=>!cw||x.start>=cw.start).forEach(x=>{ if(!x.locked){ const r=rowOf(x,it.id,true); r.price=it.price; } }); }
+      else it[p]=(v==null||(p==='pack'&&v<=0))?null:v; t.value=it[p]==null?'':(p==='price'?fi(it[p]):fq(it[p])); }
+    save(); toast('ບັນທຶກແລ້ວ'); return; }
+  if(t.dataset.min){ const it=itemById(t.dataset.min), v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; } it.min=v; save(); render(); return; }
+  if(t.id==='restoreFile' && t.files[0]){
+    const fr=new FileReader(); fr.onload=()=>{ try{ const s=JSON.parse(fr.result); if(!s.items||!s.weeks) throw 0; confirmBox('ກູ້ຄືນຂໍ້ມູນ?','ຂໍ້ມູນປັດຈຸບັນຈະຖືກແທນທີ່ດ້ວຍໄຟລ໌ສຳຮອງ.',()=>{ state=s; state.waste=state.waste||[]; ui.wid=null; save(); render(); toast('ກູ້ຄືນຂໍ້ມູນແລ້ວ'); },'ກູ້ຄືນ'); }catch(err){ toast('ໄຟລ໌ບໍ່ຖືກຕ້ອງ'); } t.value=''; }; fr.readAsText(t.files[0]);
+  }
+});
+document.addEventListener('input', e=>{
+  const t=e.target;
+  if(t.id==='q'){ ui.q=t.value; saveUI(); const pos=t.selectionStart; render(); const q=$('#q'); q.focus(); q.setSelectionRange(pos,pos); }
+});
+document.addEventListener('keydown', e=>{
+  if(e.key==='Escape') closeModal();
+  if(e.key==='Enter' && e.target.id==='poScan'){ e.preventDefault(); scanPO(e.target.value); }
+  if(e.key==='Enter' && e.target.id==='cScan'){ e.preventDefault(); scanCount(e.target.value); }
+  if(e.key==='Enter' && e.target.matches('input.cell[data-k]')){
+    e.preventDefault(); const t=e.target; t.blur();
+    const all=$$(`input.cell[data-k="${t.dataset.k}"]`).filter(x=>!x.disabled); const i=all.indexOf(t); if(all[i+1]){ all[i+1].focus(); all[i+1].select(); }
+  }
+});
+document.addEventListener('focusin', e=>{ if(e.target.matches('input.cell')) e.target.select(); });
+$('#modal').addEventListener('mousedown', e=>{ if(e.target.id==='modal') closeModal(); });
+
+/* ເພີ່ມສິນຄ້າໃໝ່ */
+function openAddItem(){
+  openModal(`<h3>ເພີ່ມສິນຄ້າໃໝ່</h3>
+   <label class="f">ໝວດ</label><select id="niCat" style="width:100%">${CATS.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><div class="sp"></div>
+   <label class="f">ຊື່ສິນຄ້າ</label><input type="text" id="niName"><div class="sp"></div>
+   <div class="row cols2"><div><label class="f">ໜ່ວຍ (ເຊັ່ນ KG, PACK, CAN 1*12)</label><input type="text" id="niUnit"></div><div><label class="f">ຂະໜາດຕໍ່ກ່ອງ (ຖ້າມີ)</label><input type="text" inputmode="numeric" id="niPack"></div></div><div class="sp"></div>
+   <div class="row cols2"><div><label class="f">ລາຄາ/ໜ່ວຍ (₭)</label><input type="text" inputmode="decimal" id="niPrice" value="0"></div><div><label class="f">ຍອດຍົກມາຕັ້ງຕົ້ນ (ອາທິດປັດຈຸບັນ)</label><input type="text" inputmode="decimal" id="niBegin" placeholder="0"></div></div>
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="saveItem">ບັນທຶກ</button></div>`);
+}
+function saveItem(){
+  const name=$('#niName').value.trim(); if(!name){ toast('ກະລຸນາໃສ່ຊື່ສິນຄ້າ'); return; }
+  const it={id:uid('i'),cat:$('#niCat').value,name,unit:$('#niUnit').value.trim(),price:parseExpr($('#niPrice').value)||0,pack:parseExpr($('#niPack').value)||null,min:null,active:true};
+  state.items.push(it);
+  const b=parseExpr($('#niBegin').value), w=curWeek();
+  if(w){ const r=rowOf(w,it.id,true); if(b>0) r.begin=b; }
+  save(); closeModal(); render(); toast('ເພີ່ມສິນຄ້າແລ້ວ');
+}
+
+
+/* ============ ໃບສັ່ງຊື້ (Purchase Order) ============ */
+const curPO = () => state.pos.find(p=>p.id===ui.poId);
+const poLinesOf = po => Object.entries(po.lines).filter(([id,l])=>n0(l.qty)>0 && itemById(id));
+const poTotal = po => poLinesOf(po).reduce((s,[id,l])=>s+n0(l.qty)*n0(l.price),0);
+function newPO(fromSuggest){
+  const t=toISO(new Date());
+  const po={id:uid('po'),no:`PO-${t.replace(/-/g,'').slice(2)}-${pad(state.pos.filter(p=>p.date===t).length+1)}`,date:t,delivery:addDays(t,2),supplier:'',orderer:state.settings.staff,branch:state.settings.branch,note:'',status:'draft',lines:{}};
+  if(fromSuggest && curWeek()) orderRows().forEach(r=>{ po.lines[r.it.id]={qty:r.s,price:r.it.price}; });
+  state.pos.push(po); ui.poId=po.id; ui.potype='all'; saveUI(); save(); setTab('po');
+  toast(fromSuggest?'ສ້າງໃບສັ່ງຊື້ ແລະ ເຕີມຈຳນວນແນະນຳແລ້ວ':'ສ້າງໃບສັ່ງຊື້ໃໝ່ແລ້ວ');
+}
+function V_po(){ const po=curPO(); return po?V_poEdit(po):V_poList(); }
+function V_poList(){
+  const list=state.pos.slice().sort((a,b)=>a.date<b.date?1:a.date>b.date?-1:(a.no<b.no?1:-1));
+  return `<div class="view-title"><div><h2>ໃບສັ່ງຊື້</h2><p>ສ້າງໃບສັ່ງຊື້ມີຫົວບິນ, ແຍກໜ້າຕາມປະເພດສິນຄ້າ, ໃສ່ບາໂຄດ ແລະ ຈຳນວນ, ພິມເປັນ PDF/ກະດາດ ແລ້ວສົ່ງຜູ້ສະໜອງ</p></div>
+   <div class="actions"><button class="btn" data-act="poFromSuggest">ສ້າງຈາກລາຍການແນະນຳ</button><button class="btn primary" data-act="poNew">+ ສ້າງໃບສັ່ງຊື້ໃໝ່</button></div></div>
+   <div class="tbl-wrap"><table class="plain"><thead><tr><th>ເລກທີ່</th><th>ວັນທີສັ່ງ</th><th>ວັນຮັບເຄື່ອງ</th><th>ຜູ້ສະໜອງ</th><th>ລາຍການ</th><th>ມູນຄ່າ (₭)</th><th>ສະຖານະ</th><th></th></tr></thead><tbody>
+   ${list.map(p=>`<tr><td><b>${esc(p.no)}</b></td><td>${dShort(p.date)} ${p.date.slice(0,4)}</td><td>${dShort(p.delivery)}</td><td>${esc(p.supplier||'—')}</td><td class="num">${poLinesOf(p).length}</td><td class="num">${fm(poTotal(p))}</td>
+    <td><span class="chip ${p.status==='received'?'ok':p.status==='sent'?'warn':''}">${PO_STATUS[p.status]}</span></td>
+    <td style="white-space:nowrap"><button class="btn sm" data-act="poOpen" data-i="${p.id}">ເປີດ</button> <button class="btn sm danger" data-act="poDel" data-i="${p.id}">ລຶບ</button></td></tr>`).join('')||'<tr><td colspan="8" class="muted" style="text-align:center;padding:26px">ຍັງບໍ່ມີໃບສັ່ງຊື້ — ກົດ "+ ສ້າງໃບສັ່ງຊື້ໃໝ່"</td></tr>'}
+   </tbody></table></div>`;
+}
+function V_poEdit(po){
+  const ro = po.status==='received', dis=ro?'disabled':'';
+  const sup=Array.from(new Set(state.pos.map(p=>p.supplier).filter(Boolean)));
+  const w=curWeek();
+  const types=[{id:'all',name:'ທັງໝົດ'},...OTYPES];
+  const items=state.items.filter(i=>i.active && (ui.potype==='all'||otypeOf(i)===ui.potype) && (!ui.poOnly||n0((po.lines[i.id]||{}).qty)>0));
+  const stockOf=id=>{ if(!w) return null; const c=calc(w,id); return c.end!=null?c.end:c.total; };
+  const sug={}; if(w) orderRows().forEach(r=>sug[r.it.id]=r.s);
+  const body = OTYPES.filter(o=>ui.potype==='all'||ui.potype===o.id).map(o=>{
+    const arr=items.filter(i=>otypeOf(i)===o.id); if(!arr.length) return '';
+    return `<tr class="cat"><td colspan="9">${o.name}</td></tr>`+arr.map(i=>{ const l=po.lines[i.id]||{}; const price=l.price!=null?l.price:i.price;
+      return `<tr><td class="name">${esc(i.name)}</td><td class="unit">${i.barcode?esc(i.barcode):'<span class="muted">—</span>'}</td><td class="unit">${esc(i.unit)}</td><td class="num">${fn(stockOf(i.id))}</td><td class="num">${sug[i.id]?fn(sug[i.id]):'—'}</td>
+       <td><input class="cell" type="text" inputmode="decimal" data-pq="${i.id}" value="${n0(l.qty)?fq(l.qty):''}" placeholder="0" ${dis}></td>
+       <td><input class="cell wide" type="text" inputmode="decimal" data-pp="${i.id}" value="${fi(price)}" ${dis}></td><td class="num" data-lt="${i.id}">${fm(n0(l.qty)*n0(price))}</td></tr>`; }).join('');
+  }).join('');
+  return `${ro?`<div class="banner info"><span>ໃບສັ່ງຊື້ນີ້ຮັບເຂົ້າສະຕັອກແລ້ວ (${po.receivedDate?dShort(po.receivedDate):''}) — ແກ້ໄຂບໍ່ໄດ້</span></div>`:''}
+  <div class="view-title"><div><h2>${esc(po.no)} <span class="chip ${po.status==='received'?'ok':po.status==='sent'?'warn':''}">${PO_STATUS[po.status]}</span></h2><p>ໃບສັ່ງຊື້ — ${esc(state.settings.branch)}</p></div>
+   <div class="actions"><button class="btn" data-act="poList">← ລາຍການໃບສັ່ງຊື້</button><button class="btn" data-act="poDup">ສຳເນົາ</button><button class="btn primary" data-act="poPrint">ພິມ / PDF</button></div></div>
+  <div class="card" style="margin-bottom:14px"><h3>ຫົວບິນ</h3>
+   <div class="row" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr))">
+    <div><label class="f">ເລກທີ່ໃບສັ່ງຊື້</label><input type="text" data-po="no" value="${esc(po.no)}" ${dis}></div>
+    <div><label class="f">ວັນທີສັ່ງ</label><input type="date" data-po="date" value="${po.date}" ${dis}></div>
+    <div><label class="f">ວັນທີຕ້ອງການຮັບເຄື່ອງ</label><input type="date" data-po="delivery" value="${po.delivery}" ${dis}></div>
+    <div><label class="f">ຜູ້ສະໜອງ / ສົ່ງເຖິງ</label><input type="text" list="supList" data-po="supplier" value="${esc(po.supplier)}" ${dis}><datalist id="supList">${sup.map(s=>`<option value="${esc(s)}">`).join('')}</datalist></div>
+    <div><label class="f">ຜູ້ສັ່ງ</label><input type="text" data-po="orderer" value="${esc(po.orderer)}" ${dis}></div>
+    <div><label class="f">ສາຂາ</label><input type="text" data-po="branch" value="${esc(po.branch)}" ${dis}></div>
+   </div><div class="sp"></div><label class="f">ໝາຍເຫດ</label><input type="text" data-po="note" value="${esc(po.note)}" ${dis}></div>
+  <div class="card" style="margin-bottom:14px">
+   <div class="row" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))"><div><label class="f">ສະແກນ / ພິມບາໂຄດ ແລ້ວກົດ Enter (ເພີ່ມ +1 ທຸກຄັ້ງ)</label><input type="text" id="poScan" inputmode="numeric" placeholder="ຍິງບາໂຄດທີ່ນີ້..." ${dis} autocomplete="off"></div>
+   <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><button class="btn" data-act="poFill" ${dis}>ເຕີມຈຳນວນແນະນຳ</button><button class="btn" data-act="poClear" ${dis}>ລ້າງຈຳນວນ</button><label style="display:flex;gap:6px;align-items:center;min-height:40px;cursor:pointer"><input type="checkbox" data-f="poOnly" ${ui.poOnly?'checked':''}> ສະເພາະທີ່ສັ່ງ</label></div></div>
+   <div class="chips">${types.map(t=>{ const n=t.id==='all'?poLinesOf(po).length:poLinesOf(po).filter(([id])=>otypeOf(itemById(id))===t.id).length; return `<button class="pill ${ui.potype===t.id?'on':''}" data-act="potype" data-v="${t.id}">${t.name}${n?` · ${n}`:''}</button>`; }).join('')}</div></div>
+  <div class="tbl-wrap"><table class="sheet"><thead><tr><th class="name">ລາຍການ</th><th>ບາໂຄດ</th><th>ໜ່ວຍ</th><th>ຄົງເຫຼືອ</th><th>ແນະນຳ</th><th>ຈຳນວນສັ່ງ</th><th>ລາຄາ/ໜ່ວຍ (₭)</th><th>ລວມ (₭)</th></tr></thead><tbody>${body||'<tr><td colspan="8" class="muted" style="text-align:center;padding:20px">ບໍ່ມີລາຍການ</td></tr>'}</tbody></table></div>
+  <div class="card" style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap"><div><span class="muted">ລາຍການທີ່ສັ່ງ</span> <b id="poCnt">${poLinesOf(po).length}</b> · <span class="muted">ມູນຄ່າລວມ</span> <b class="num" id="poGrand" style="font-size:20px">${fm(poTotal(po))} ₭</b></div>
+   <div class="actions"><button class="btn" data-act="poCopy">ຄັດລອກຂໍ້ຄວາມ</button><button class="btn" data-act="poCSV">CSV</button>
+   ${po.status==='draft'?'<button class="btn" data-act="poStatus" data-v="sent">ໝາຍວ່າສົ່ງແລ້ວ</button>':''}${po.status==='sent'?'<button class="btn" data-act="poStatus" data-v="draft">ກັບເປັນຮ່າງ</button>':''}
+   ${ro?'':'<button class="btn primary" data-act="poReceive">ຮັບເຄື່ອງ → ເຂົ້າສະຕັອກ</button>'}</div></div>
+  <p class="hint">ຈຳນວນສັ່ງໃຊ້ໜ່ວຍດຽວກັບການນັບສະຕັອກ. ໃຊ້ປຸ່ມ "ຮັບເຄື່ອງ" ເມື່ອເຄື່ອງມາຮອດ ເພື່ອບັນທຶກເຂົ້າ "ຮັບເຂົ້າ" ຂອງອາທິດນັ້ນອັດຕະໂນມັດ (ໃຊ້ວັນທີຮັບເຄື່ອງ).</p>`;
+}
+function updatePOTotals(po){
+  $$('[data-lt]').forEach(el=>{ const l=po.lines[el.dataset.lt]||{}; el.textContent=fm(n0(l.qty)*n0(l.price)); });
+  const g=$('#poGrand'); if(g) g.textContent=fm(poTotal(po))+' ₭'; const c=$('#poCnt'); if(c) c.textContent=poLinesOf(po).length;
+}
+function poFill(){ const po=curPO(); if(!po||po.status==='received') return; if(!curWeek()){ toast('ຍັງບໍ່ມີອາທິດ'); return; }
+  const rows=orderRows(); rows.forEach(r=>{ po.lines[r.it.id]={qty:r.s,price:(po.lines[r.it.id]||{}).price!=null?po.lines[r.it.id].price:r.it.price}; }); save(); render(); toast(`ເຕີມ ${rows.length} ລາຍການ`); }
+function scanPO(code){
+  const po=curPO(); code=String(code).trim(); if(!po||po.status==='received'||!code) return;
+  const it=state.items.find(i=>i.barcode===code);
+  if(!it){ openAssign(code); return; }
+  const l=po.lines[it.id]||(po.lines[it.id]={qty:0,price:it.price}); l.qty=n0(l.qty)+1; if(ui.potype!=='all') ui.potype=otypeOf(it); save(); render();
+  const inp=$(`input[data-pq="${it.id}"]`); if(inp){ inp.closest('tr').style.background='var(--accent-soft)'; inp.scrollIntoView({block:'center'}); }
+  const s=$('#poScan'); if(s) s.focus(); toast(`${it.name} → ${fq(l.qty)} ${it.unit}`);
+}
+function openAssign(code){
+  openModal(`<h3>ບໍ່ພົບບາໂຄດນີ້</h3><p>ບາໂຄດ <b>${esc(code)}</b> ຍັງບໍ່ໄດ້ຜູກກັບສິນຄ້າ. ເລືອກສິນຄ້າເພື່ອຜູກບາໂຄດ ແລະ ເພີ່ມ +1:</p>
+   <select id="asItem" style="width:100%">${itemOptions()}</select><input type="hidden" id="asCode" value="${esc(code)}">
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="poAssign">ຜູກບາໂຄດ ແລະ ເພີ່ມ</button></div>`);
+}
+function poAssign(){ const code=$('#asCode').value, id=$('#asItem').value; const it=itemById(id); it.barcode=code; save(); closeModal(); scanPO(code); }
+function scanCount(code){
+  code=String(code).trim(); if(!code) return; const it=state.items.find(i=>i.barcode===code);
+  if(!it){ toast('ບໍ່ພົບບາໂຄດ '+code+' — ໃສ່ບາໂຄດໃນແຖບ "ລາຍການສິນຄ້າ" ກ່ອນ'); return; }
+  ui.cat='all'; ui.todo=false; ui.q=''; render();
+  const inp=$(`input[data-k="end"][data-i="${it.id}"]`); if(inp){ inp.scrollIntoView({block:'center'}); inp.focus(); inp.select(); }
+}
+function poBySection(po){ return OTYPES.map(o=>({o,rows:poLinesOf(po).filter(([id])=>otypeOf(itemById(id))===o.id).map(([id,l])=>({it:itemById(id),qty:n0(l.qty),price:n0(l.price)}))})).filter(s=>s.rows.length); }
+function printPO(po){
+  const secs=poBySection(po); if(!secs.length){ toast('ຍັງບໍ່ມີລາຍການທີ່ສັ່ງ'); return; }
+  const head=`<div style="display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:8px"><div><h2>ໃບສັ່ງຊື້ / PURCHASE ORDER</h2><div>${esc(po.branch)}</div></div>
+   <div style="text-align:right"><div><b>ເລກທີ່: ${esc(po.no)}</b></div><div>ວັນທີສັ່ງ: ${po.date}</div><div>ວັນຮັບເຄື່ອງ: ${po.delivery}</div></div></div>
+   <table style="margin-bottom:8px"><tr><td style="width:50%"><b>ຜູ້ສະໜອງ:</b> ${esc(po.supplier)||'&nbsp;'}</td><td><b>ຜູ້ສັ່ງ:</b> ${esc(po.orderer)}</td></tr>${po.note?`<tr><td colspan="2"><b>ໝາຍເຫດ:</b> ${esc(po.note)}</td></tr>`:''}</table>`;
+  let grand=0;
+  const pages=secs.map((s,i)=>{ const sub=s.rows.reduce((t,r)=>t+r.qty*r.price,0); grand+=sub;
+    return `<div class="${i?'pbreak':''}">${head}<h3 style="margin:6px 0">ໝວດ: ${s.o.name} (${i+1}/${secs.length})</h3>
+    <table><thead><tr><th style="width:5%">NO</th><th style="width:20%">ບາໂຄດ</th><th>ລາຍການ</th><th>ໜ່ວຍ</th><th style="text-align:right">ຈຳນວນ</th><th style="text-align:right">ລາຄາ</th><th style="text-align:right">ລວມ (₭)</th></tr></thead><tbody>
+    ${s.rows.map((r,k)=>`<tr><td>${k+1}</td><td>${esc(r.it.barcode||'')}</td><td>${esc(r.it.name)}</td><td>${esc(r.it.unit)}</td><td style="text-align:right">${fn(r.qty)}</td><td style="text-align:right">${fm(r.price)}</td><td style="text-align:right">${fm(r.qty*r.price)}</td></tr>`).join('')}
+    <tr><td colspan="6" style="text-align:right"><b>ລວມໝວດ ${s.o.name}</b></td><td style="text-align:right"><b>${fm(sub)}</b></td></tr>${i===secs.length-1?`<tr><td colspan="6" style="text-align:right"><b>ລວມທັງໝົດ</b></td><td style="text-align:right"><b>${fm(grand)} ₭</b></td></tr>`:''}</tbody></table>
+    <div style="display:flex;justify-content:space-around;margin-top:46px;text-align:center"><div>____________________<br>ຜູ້ສັ່ງ</div><div>____________________<br>ຜູ້ອະນຸມັດ</div><div>____________________<br>ຜູ້ຮັບ / ຜູ້ສະໜອງ</div></div></div>`; });
+  $('#printArea').innerHTML=pages.join(''); window.print();
+}
+function poCopy(po){
+  const secs=poBySection(po); if(!secs.length){ toast('ຍັງບໍ່ມີລາຍການທີ່ສັ່ງ'); return; }
+  let t=`ໃບສັ່ງຊື້ ${po.no}\n${po.branch}\nວັນທີສັ່ງ ${po.date} · ຮັບເຄື່ອງ ${po.delivery}\nຜູ້ສະໜອງ: ${po.supplier||'-'} · ຜູ້ສັ່ງ: ${po.orderer}\n`;
+  secs.forEach(s=>{ t+=`\n[${s.o.name}]\n`+s.rows.map(r=>`- ${r.it.name}${r.it.barcode?' ('+r.it.barcode+')':''}: ${fn(r.qty)} ${r.it.unit}`).join('\n')+'\n'; });
+  t+=`\nລວມ ${fm(poTotal(po))} ₭`;
+  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('ຄັດລອກແລ້ວ'),()=>openModal(`<h3>ຄັດລອກ</h3><textarea rows="14" style="width:100%">${esc(t)}</textarea><div class="mfoot"><button class="btn" data-act="closeModal">ປິດ</button></div>`));
+}
+function poCSV(po){
+  const rows=[['ເລກທີ່',po.no,'ວັນທີສັ່ງ',po.date,'ວັນຮັບເຄື່ອງ',po.delivery],['ຜູ້ສະໜອງ',po.supplier,'ຜູ້ສັ່ງ',po.orderer,'ສາຂາ',po.branch],[],['ປະເພດ','ບາໂຄດ','ລາຍການ','ໜ່ວຍ','ຈຳນວນ','ລາຄາ','ລວມ']];
+  poBySection(po).forEach(s=>s.rows.forEach(r=>rows.push([s.o.name,r.it.barcode,r.it.name,r.it.unit,r.qty,r.price,Math.round(r.qty*r.price)])));
+  rows.push([],['ລວມທັງໝົດ','','','','','',Math.round(poTotal(po))]); download(`${po.no}.csv`,toCSV(rows),'text/csv');
+}
+function poReceive(po){
+  const lines=poLinesOf(po); if(!lines.length){ toast('ຍັງບໍ່ມີລາຍການທີ່ສັ່ງ'); return; }
+  const d=toISO(new Date())<po.delivery?toISO(new Date()):po.delivery;
+  openModal(`<h3>ຮັບເຄື່ອງເຂົ້າສະຕັອກ</h3><p>ບັນທຶກ ${lines.length} ລາຍການ ເຂົ້າຊ່ອງ "ຮັບເຂົ້າ" ຂອງອາທິດທີ່ກົງກັບວັນທີຮັບເຄື່ອງ.</p><label class="f">ວັນທີຮັບເຄື່ອງຈິງ</label><input type="date" id="rvDate" value="${po.delivery}">
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" id="rvOk">ຢືນຢັນຮັບເຂົ້າ</button></div>`);
+  $('#rvOk').onclick=()=>{
+    const dt=$('#rvDate').value; const w=sortedWeeks().find(x=>dt>=x.start&&dt<=wEnd(x));
+    if(!w){ toast('ບໍ່ມີອາທິດທີ່ຄອບຄຸມວັນທີນີ້ — ເປີດອາທິດກ່ອນ'); return; } if(w.locked){ toast('ອາທິດນັ້ນຖືກລັອກ — ປົດລັອກກ່ອນ'); return; }
+    const k=Math.round((parseD(dt)-parseD(w.start))/864e5);
+    lines.forEach(([id,l])=>{ const r=rowOf(w,id,true); r.d=r.d||[]; while(r.d.length<=k) r.d.push(null); r.d[k]=n0(r.d[k])+n0(l.qty); });
+    po.status='received'; po.receivedDate=dt; save(); closeModal(); render(); toast('ຮັບເຂົ້າສະຕັອກແລ້ວ ('+weekLabel(w)+')');
+  };
+}
+
+/* ============ ແຈ້ງເຕືອນນັບສະຕັອກວັນຈັນ ============ */
+function remindHTML(){
+  if(!state.settings.remindOn) return '';
+  const t=toISO(new Date()), d=dow(t), arr=sortedWeeks(); if(!arr.length) return '';
+  const w=arr.find(x=>t>=x.start&&t<=wEnd(x)) || arr[arr.length-1];
+  const S=wsum(w);
+  if(d===1){
+    return S.todo.length
+      ? `<div class="banner bad"><span><b>ວັນນີ້ວັນຈັນ — ມື້ນັບສະຕັອກ!</b> ອາທິດນີ້ຍັງເຫຼືອ ${S.todo.length} ລາຍການທີ່ຍັງບໍ່ໄດ້ນັບ</span><button class="btn sm primary" data-act="goCount">ໄປນັບສະຕັອກ</button></div>`
+      : `<div class="banner info"><span>ວັນນີ້ວັນຈັນ — ນັບສະຕັອກຄົບທຸກລາຍການແລ້ວ ✓ ຢ່າລືມລັອກອາທິດ ແລະ ເປີດອາທິດໃໝ່</span></div>`;
+  }
+  if(t>wEnd(w) && S.todo.length) return `<div class="banner warn"><span><b>ເກີນກຳນົດນັບ:</b> ${esc(weekFull(w))} ຈົບແລ້ວ ແຕ່ຍັງບໍ່ໄດ້ນັບ ${S.todo.length} ລາຍການ</span><button class="btn sm" data-act="goCount">ໄປນັບ</button></div>`;
+  if(ui.tab==='overview'||ui.tab==='count'){ const k=(8-d)%7||7; return `<p class="hint" style="margin:0 0 10px">ວັນນັບສະຕັອກຖັດໄປ: ວັນຈັນ ທີ ${dShort(addDays(t,k))} (ອີກ ${k} ວັນ)</p>`; }
+  return '';
+}
+function notifStateText(){
+  if(!('Notification' in window)) return 'browser ນີ້ບໍ່ຮອງຮັບການແຈ້ງເຕືອນ — ໃຫ້ໃຊ້ໄຟລ໌ .ics ແທນ';
+  return {granted:'ສະຖານະ: ອະນຸຍາດແລ້ວ ✓',denied:'ສະຖານະ: ຖືກບລັອກ — ເປີດອະນຸຍາດໃນການຕັ້ງຄ່າ browser',default:'ສະຖານະ: ຍັງບໍ່ໄດ້ອະນຸຍາດ'}[Notification.permission];
+}
+function enableNotif(){
+  if(!('Notification' in window)){ toast('browser ນີ້ບໍ່ຮອງຮັບ'); return; }
+  Notification.requestPermission().then(p=>{ const el=$('#notifState'); if(el) el.textContent=notifStateText(); if(p==='granted'){ new Notification('ເປີດການແຈ້ງເຕືອນແລ້ວ',{body:'ຈະເຕືອນນັບສະຕັອກທຸກວັນຈັນ ຕາມເວລາທີ່ຕັ້ງ'}); } });
+}
+function checkNotify(){
+  const s=state.settings; if(!s.remindOn||!('Notification' in window)||Notification.permission!=='granted') return;
+  const now=new Date(); if(now.getDay()!==1) return;
+  const [h,m]=(s.remindTime||'08:00').split(':').map(Number); if(now.getHours()*60+now.getMinutes()<h*60+m) return;
+  const t=toISO(now); if(s.lastNotify===t) return;
+  const w=curWeek(); const S=w?wsum(w):null; if(S&&S.todo.length===0) return;
+  s.lastNotify=t; save();
+  try{ new Notification('ວັນຈັນ — ມື້ນັບສະຕັອກ',{body:S?`ຍັງເຫຼືອ ${S.todo.length} ລາຍການທີ່ຍັງບໍ່ໄດ້ນັບ`:'ເຖິງເວລານັບສະຕັອກປະຈຳອາທິດແລ້ວ'}); }catch(e){}
+}
+function downloadICS(){
+  const [h,m]=(state.settings.remindTime||'08:00').split(':'); const t=toISO(new Date()); const k=(8-dow(t))%7; const first=addDays(t,k).replace(/-/g,'');
+  const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//PotatoCorner Inventory//LO','BEGIN:VEVENT','UID:pc-monday-count@inventory','DTSTAMP:'+t.replace(/-/g,'')+'T000000Z',
+   `DTSTART:${first}T${h}${m}00`,`DTEND:${first}T${h}${m}00`.replace(/T(\d\d)(\d\d)00$/,(x,a,b)=>`T${a}${b}00`),'RRULE:FREQ=WEEKLY;BYDAY=MO','SUMMARY:ນັບສະຕັອກ '+state.settings.branch,'DESCRIPTION:ວັນຈັນ — ມື້ນັບສະຕັອກປະຈຳອາທິດ ແລະ ເຮັດໃບສັ່ງຊື້',
+   'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:ນັບສະຕັອກ','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
+  download('monday-stock-count.ics',ics,'text/calendar'); toast('ດາວໂຫຼດແລ້ວ — ເປີດໄຟລ໌ເພື່ອເພີ່ມເຂົ້າປະຕິທິນ');
+}
+setInterval(()=>{ try{ checkNotify(); }catch(e){} },60000);
+
+/* ============ ເລີ່ມຕົ້ນ ============ */
+state = load(); ui = loadUI();
+$('#themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.dataset.theme; const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.dataset.theme=dark?'light':'dark'; try{localStorage.setItem('pc_theme',dark?'light':'dark')}catch(e){} });
+try{ const th=localStorage.getItem('pc_theme'); if(th) document.documentElement.dataset.theme=th; }catch(e){}
+if(!storageOK) setSaveInd('ບຣາວເຊີບໍ່ອະນຸຍາດບັນທຶກ — ໃຫ້ດາວໂຫຼດສຳຮອງເປັນປະຈຳ', true);
+render(); checkNotify();
+window.addEventListener('resize',()=>{ const hdr=$('.top'); if(hdr) document.documentElement.style.setProperty('--hdr',(hdr.offsetHeight-1)+'px'); });
+
+</script>
+</body>
+</html>
