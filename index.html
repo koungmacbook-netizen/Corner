@@ -203,6 +203,9 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
 .pbreak{page-break-before:always}
 @media print{ #printArea{font-size:12px} #printArea h2{font-size:18px} }
 
+.bsel{max-width:100%;min-height:30px;padding:2px 8px;font-size:13px;margin-top:2px;color:var(--muted);font-weight:600}
+.bsel{display:block}
+
 </style>
 </head>
 <body>
@@ -210,7 +213,7 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
   <div class="wrap">
     <div class="brand">
       <svg width="38" height="38" viewBox="0 0 40 40" aria-hidden="true"><rect width="40" height="40" rx="10" fill="#c2410c"/><g fill="#f6c23e"><rect x="11" y="6" width="4" height="15" rx="1.5" transform="rotate(-8 13 13)"/><rect x="17" y="4" width="4" height="17" rx="1.5"/><rect x="23" y="6" width="4" height="15" rx="1.5" transform="rotate(8 25 13)"/></g><path d="M9 19h22l-3 15a2 2 0 0 1-2 1.6H14a2 2 0 0 1-2-1.6z" fill="#fff"/><rect x="16" y="23" width="8" height="8" rx="2" fill="#c2410c" opacity=".85"/></svg>
-      <div><b>ລະບົບນັບສະຕັອກ & ອິນເວັນໂຕຣີ</b><small id="branchName"></small></div>
+      <div><b>ລະບົບນັບສະຕັອກ & ອິນເວັນໂຕຣີ</b><select id="branchSel" class="bsel" aria-label="ເລືອກສາຂາ"></select></div>
     </div>
     <div class="weekbar">
       <select id="weekSel" aria-label="ເລືອກອາທິດ"></select>
@@ -246,7 +249,7 @@ const MS = ['ມ.ກ.','ກ.ພ.','ມ.ນ.','ມ.ສ.','ພ.ພ.','ມິ.ຖ.'
 const ML = ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
 const REASONS = ['ໝົດອາຍຸ','ເສຍຫາຍ / ເປື້ອນ','ເຮັດຜິດ / ເຮັດຖິ້ມ','ຕົກຫຼົ່ນ / ຫົກ','ອາຫານບໍ່ໄດ້ມາດຕະຖານ','ອື່ນໆ'];
 const TABS = [
-  ['overview','ພາບລວມ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],
+  ['overview','ພາບລວມ'],['branches','ທຸກສາຂາ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],['pos','ນຳເຂົ້າ POS'],['analysis','ວິເຄາະຕົ້ນທຶນ'],
   ['month','ສະຫຼຸບເດືອນ'],['waste','ຂອງເສຍ'],['order','ແນະນຳສັ່ງຊື້'],['po','ໃບສັ່ງຊື້'],['items','ລາຍການສິນຄ້າ'],['settings','ຕັ້ງຄ່າ / ສຳຮອງ']
 ];
 
@@ -263,6 +266,10 @@ const otypeOf = it => it.otype || defOtype(it);
 function migrate(s){
   s.items.forEach(it=>{ if(!it.otype) it.otype=defOtype(it); if(it.barcode==null) it.barcode=''; });
   s.pos = s.pos || [];
+  s.posMap = s.posMap || {};
+  s.monthTargets = s.monthTargets || {};
+  if(s.settings&&s.settings.costLimit==null) s.settings.costLimit=0.35;
+  if(s.settings&&s.settings.varTol==null) s.settings.varTol=0.05;
   s.settings = Object.assign({remindOn:true,remindTime:'08:00',lastNotify:''}, s.settings||{});
   return s;
 }
@@ -298,20 +305,51 @@ function parseExpr(str){
 }
 
 /* ============ ສະຖານະ + ບັນທຶກ ============ */
-let state, ui, storageOK = true;
+let ROOT, state, ui, storageOK = true;
 function defaultState(){
   const s = clone(SEED);
   return migrate({v:1, settings:{branch:'POTATO CORNER MEGA MALL', staff:'MS PHOTHALA'}, items:s.items, weeks:s.weeks, waste:[]});
 }
+function wrapLegacy(d){
+  const st=d.settings||{};
+  return {v:2,branches:[{id:'b1',data:d}],active:'b1',remind:{on:st.remindOn!==false,time:st.remindTime||'08:00',last:st.lastNotify||''}};
+}
+function fixRoot(s){
+  s.branches.forEach(b=>migrate(b.data));
+  s.remind=Object.assign({on:true,time:'08:00',last:''},s.remind||{});
+  if(!s.branches.some(b=>b.id===s.active)) s.active=s.branches[0].id;
+  return s;
+}
 function load(){
   try{
     const raw = localStorage.getItem(KEY);
-    if(raw){ const s = JSON.parse(raw); if(s && s.items && s.weeks) return migrate(s); }
+    if(raw){ const s = JSON.parse(raw);
+      if(s && s.branches && s.branches.length) return fixRoot(s);
+      if(s && s.items && s.weeks) return fixRoot(wrapLegacy(migrate(s))); }
   }catch(e){ storageOK=false; }
-  return defaultState();
+  return fixRoot(wrapLegacy(defaultState()));
+}
+const activeBranch = () => ROOT.branches.find(b=>b.id===ROOT.active);
+const bName = b => b.data.settings.branch;
+function withBranch(id,fn){
+  const b=ROOT.branches.find(x=>x.id===id), os=state, oc=CACHE;
+  state=b.data; CACHE=new Map();
+  try{ return fn(); } finally{ state=os; CACHE=oc; }
+}
+function loadXLSX(){ return new Promise((res,rej)=>{ if(window.XLSX) return res(); const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload=()=>res(); s.onerror=()=>rej(); document.head.appendChild(s); }); }
+function setActive(id){
+  ROOT.active=id; state=activeBranch().data; touch();
+  ui.wid=null; ui.poId=null; POSIMP=null; ui.month=null; ui.wmonth=null; ui.cat='all'; ui.q=''; ui.todo=false;
+  saveUI(); save(); render();
+}
+function replaceActive(d){ d.settings.branch=state.settings.branch; d.settings.staff=state.settings.staff; activeBranch().data=d; state=d; touch(); }
+function restoreFrom(s){
+  if(s.branches){ ROOT=fixRoot(s); state=activeBranch().data; }
+  else { replaceActive(migrate(s)); }
+  touch();
 }
 function loadUI(){
-  const d = {tab:'overview', wid:null, cat:'all', todo:false, q:'', month:null, target:14, onlyLow:false, wmonth:null, poId:null, potype:'all', poOnly:false};
+  const d = {tab:'overview', wid:null, cat:'all', todo:false, q:'', month:null, target:14, onlyLow:false, wmonth:null, poId:null, potype:'all', poOnly:false, mdate:null, mmode:'week'};
   try{ const r=localStorage.getItem(UIKEY); if(r) Object.assign(d, JSON.parse(r)); }catch(e){}
   return d;
 }
@@ -320,7 +358,7 @@ function save(){
   touch();
   clearTimeout(saveTimer);
   saveTimer = setTimeout(()=>{
-    try{ localStorage.setItem(KEY, JSON.stringify(state)); storageOK=true; setSaveInd('ບັນທຶກອັດຕະໂນມັດແລ້ວ '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})); }
+    try{ localStorage.setItem(KEY, JSON.stringify(ROOT)); storageOK=true; setSaveInd('ບັນທຶກອັດຕະໂນມັດແລ້ວ '+new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})); }
     catch(e){ storageOK=false; setSaveInd('ບັນທຶກໃນບຣາວເຊີບໍ່ໄດ້ — ກະລຸນາກົດ "ດາວໂຫຼດສຳຮອງ"', true); }
   }, 150);
 }
@@ -448,7 +486,7 @@ const toCSV = rows => '﻿'+rows.map(r=>r.map(csvCell).join(',')).join('\r\n');
 /* ============ ຫຼັກຂອງການສະແດງຜົນ ============ */
 function renderChrome(){
   const w=curWeek();
-  $('#branchName').textContent = state.settings.branch;
+  $('#branchSel').innerHTML = ROOT.branches.map(b=>`<option value="${b.id}" ${b.id===ROOT.active?'selected':''}>${esc(bName(b))}</option>`).join('');
   const arr=sortedWeeks();
   $('#weekSel').innerHTML = arr.map(x=>`<option value="${x.id}" ${w&&x.id===w.id?'selected':''}>${esc(weekFull(x))}${x.locked?' (ລັອກ)':''}</option>`).join('');
   const S = w?wsum(w):null;
@@ -460,7 +498,7 @@ function renderChrome(){
 function render(){
   renderChrome();
   const v=$('#view');
-  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,items:V_items,settings:V_settings}[ui.tab]||V_overview;
+  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,pos:V_pos,analysis:V_analysis,branches:V_branches,items:V_items,settings:V_settings}[ui.tab]||V_overview;
   v.innerHTML = remindHTML() + fn_();
   refreshCalc();
   const hdr=$('.top'); if(hdr) document.documentElement.style.setProperty('--hdr',(hdr.offsetHeight-1)+'px');
@@ -486,6 +524,7 @@ function V_overview(){
     {ok:filledSales, t:filledSales?`ປ້ອນຍອດຂາຍແລ້ວ (${fm(SL.net)} ₭)`:'ຍັງບໍ່ໄດ້ປ້ອນຍອດຂາຍຂອງອາທິດນີ້', act:'profit', btn:'ປ້ອນຍອດຂາຍ'},
     {ok:S.neg.length===0, t:S.neg.length?`ມີ ${S.neg.length} ລາຍການນັບໄດ້ຫຼາຍກວ່າທີ່ຄວນມີ (ໃຊ້ໄປຕິດລົບ) — ກວດຄືນ`:'ບໍ່ມີລາຍການຜິດປົກກະຕິ', act:'sheet', btn:'ເບິ່ງຕາຕະລາງ'},
     {ok:S.low.length===0, t:S.low.length?`ມີ ${S.low.length} ລາຍການຕ່ຳກວ່າຂັ້ນຕ່ຳ — ຄວນສັ່ງຊື້`:'ບໍ່ມີລາຍການຕ່ຳກວ່າຂັ້ນຕ່ຳ (ຕັ້ງຂັ້ນຕ່ຳໄດ້ໃນແຖບ "ສັ່ງຊື້")', act:'order', btn:'ເບິ່ງລາຍການສັ່ງຊື້'},
+    {ok:!(costPct!=null&&costPct>(n0(state.settings.costLimit)||0.35)), t:costPct!=null&&costPct>(n0(state.settings.costLimit)||0.35)?`ຕົ້ນທຶນ ${fp(costPct)} ສູງກວ່າເກນ ${fp(n0(state.settings.costLimit)||0.35)}`:'ຕົ້ນທຶນຢູ່ໃນເກນ', act:'analysis', btn:'ວິເຄາະສາເຫດ'},
   ];
   const trend = sortedWeeks().slice(-8).map(x=>{ const s=wsum(x), sl=salesOf(x); return {w:x,cost:s.cost,net:sl.net,pct:sl.net>0?s.cost/sl.net:null,ok:s.todo.length===0}; });
   return `
@@ -665,6 +704,10 @@ function profitSummary(w){
 
 /* ---------- ສະຫຼຸບເດືອນ ---------- */
 function monthsList(){ return Array.from(new Set(state.weeks.map(w=>w.start.slice(0,7)))).sort(); }
+function monthTarget(ym){
+  const mt=n0(state.monthTargets&&state.monthTargets[ym]);
+  return mt>0 ? mt : state.weeks.filter(w=>w.start.slice(0,7)===ym).reduce((s,x)=>s+n0(x.target),0);
+}
 function monthAgg(ym){
   const W=sortedWeeks().filter(w=>w.start.slice(0,7)===ym);
   if(!W.length) return null;
@@ -704,11 +747,12 @@ function V_month(){
     <div class="actions"><select data-f="month">${ms.map(m=>`<option value="${m}" ${m===ui.month?'selected':''}>${monthName(m)}</option>`).join('')}</select><button class="btn" data-act="exportMonth">ດາວໂຫຼດ CSV</button><button class="btn primary" data-act="newWeek">${reachesEnd?'ເປີດເດືອນຖັດໄປ':'+ ເປີດອາທິດຕໍ່ໄປ'}</button></div></div>
   <div class="grid kpis">
     <div class="card kpi"><div class="lbl">ຍອດຂາຍສຸດທິ</div><div class="val">${fm(A.sales.net)} ₭</div></div>
-    <div class="card kpi"><div class="lbl">ເປົ້າໝາຍເດືອນ</div><div class="val">${(()=>{const tg=A.W.reduce((s,x)=>s+n0(x.target),0);return tg>0?fp(A.sales.net/tg):'—';})()}</div><div class="sub">${fm(A.W.reduce((s,x)=>s+n0(x.target),0))} ₭ (ລວມເປົ້າທຸກອາທິດ)</div></div>
+    <div class="card kpi"><div class="lbl">ເປົ້າໝາຍເດືອນ</div><div class="val">${(()=>{const tg=monthTarget(ui.month);return tg>0?fp(A.sales.net/tg):'—';})()}</div><div class="sub">${fm(monthTarget(ui.month))} ₭ · ເຫຼືອ ${fm(Math.max(0,monthTarget(ui.month)-A.sales.net))} ₭</div></div>
     <div class="card kpi"><div class="lbl">ຕົ້ນທຶນລວມ</div><div class="val">${fm(A.cost)} ₭</div><div class="sub">${fp(A.sales.net>0?A.cost/A.sales.net:null)} ຂອງຍອດຂາຍ</div></div>
     <div class="card kpi"><div class="lbl">ມູນຄ່າຂອງເສຍ</div><div class="val">${fm(A.wasteCost)} ₭</div><div class="sub">${fp(A.cost>0?A.wasteCost/A.cost:null)} ຂອງຕົ້ນທຶນ</div></div>
     <div class="card kpi"><div class="lbl">ມູນຄ່າສະຕັອກທ້າຍເດືອນ</div><div class="val">${fm(A.stock)} ₭</div><div class="sub">ຍົກໄປເປັນຍອດຍົກມາເດືອນຖັດໄປ</div></div>
   </div><div class="sp"></div>
+  ${monthTargetCard(A)}
   <div class="grid two">
    <div class="card"><h3>ຂັ້ນຕອນປິດເດືອນ & ເລີ່ມເດືອນຖັດໄປ</h3>
     <ul class="todo-list">${chk.map(c=>`<li><span class="st"><span class="tick ${c.ok?'ok':'bad'}">${c.ok?'✓':(c.soft?'–':'!')}</span><span>${c.t}</span></span></li>`).join('')}
@@ -808,15 +852,15 @@ function V_items(){
 function V_settings(){
   return `<div class="view-title"><div><h2>ຕັ້ງຄ່າ & ສຳຮອງຂໍ້ມູນ</h2><p>ຂໍ້ມູນຖືກບັນທຶກໃນບຣາວເຊີຂອງເຄື່ອງນີ້ເທົ່ານັ້ນ — ຄວນດາວໂຫຼດໄຟລ໌ສຳຮອງເປັນປະຈຳ (ຢ່າງໜ້ອຍທຸກທ້າຍອາທິດ)</p></div></div>
   <div class="grid two">
-   <div class="card"><h3>ຂໍ້ມູນສາຂາ</h3><label class="f">ຊື່ສາຂາ</label><input type="text" data-f="branch" value="${esc(state.settings.branch)}"><div class="sp"></div>
+   <div class="card"><h3>ຂໍ້ມູນສາຂາ (ສາຂາທີ່ກຳລັງໃຊ້)</h3><div class="actions" style="margin-bottom:10px"><button class="btn sm" data-act="brManage">ຈັດການສາຂາ</button><button class="btn sm primary" data-act="brNew">+ ເພີ່ມສາຂາ</button></div><label class="f">ຊື່ສາຂາ</label><input type="text" data-f="branch" value="${esc(state.settings.branch)}"><div class="sp"></div>
     <label class="f">ຜູ້ຮັບຜິດຊອບເລີ່ມຕົ້ນ (ໃຊ້ເປັນຄ່າຕັ້ງຕົ້ນຂອງອາທິດໃໝ່)</label><input type="text" data-f="staff" value="${esc(state.settings.staff)}"><div class="sp"></div>
     <label class="f">ຜູ້ນັບຂອງອາທິດທີ່ເລືອກ</label><input type="text" data-f="weekBy" value="${esc((curWeek()||{}).by||'')}"></div>
    <div class="card"><h3>ສຳຮອງ / ກູ້ຄືນຂໍ້ມູນ</h3><div class="actions"><button class="btn primary" data-act="backup">ດາວໂຫຼດໄຟລ໌ສຳຮອງ (.json)</button><button class="btn" data-act="restore">ກູ້ຄືນຈາກໄຟລ໌</button><input type="file" id="restoreFile" accept=".json,application/json" class="hide"></div>
     <p class="hint">ໄຟລ໌ສຳຮອງໃຊ້ຍ້າຍຂໍ້ມູນໄປເຄື່ອງອື່ນ ຫຼື ກູ້ຄືນຖ້າບຣາວເຊີຖືກລ້າງ.</p><div class="sp"></div>
     <div class="actions"><button class="btn" data-act="exportAll">ດາວໂຫຼດທຸກອາທິດ (CSV)</button></div></div>
    <div class="card"><h3>ແຈ້ງເຕືອນນັບສະຕັອກທຸກວັນຈັນ</h3>
-    <label style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-bottom:10px"><input type="checkbox" data-f="remindOn" ${state.settings.remindOn?'checked':''}> ເປີດການແຈ້ງເຕືອນ (ແບນເນີໃນເວັບ ທຸກຄັ້ງທີ່ເປີດ ໃນວັນຈັນ)</label>
-    <label class="f">ເວລາແຈ້ງເຕືອນ</label><input type="time" data-f="remindTime" value="${esc(state.settings.remindTime||'08:00')}" style="max-width:160px">
+    <label style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-bottom:10px"><input type="checkbox" data-f="remindOn" ${ROOT.remind.on?'checked':''}> ເປີດການແຈ້ງເຕືອນ (ແບນເນີໃນເວັບ ທຸກຄັ້ງທີ່ເປີດ ໃນວັນຈັນ)</label>
+    <label class="f">ເວລາແຈ້ງເຕືອນ</label><input type="time" data-f="remindTime" value="${esc(ROOT.remind.time||'08:00')}" style="max-width:160px">
     <div class="sp"></div><div class="actions"><button class="btn" data-act="enableNotif">ເປີດແຈ້ງເຕືອນໃນ browser</button><button class="btn primary" data-act="icsReminder">ດາວໂຫຼດປະຕິທິນ (.ics) ເຕືອນທຸກວັນຈັນ</button></div>
     <p class="hint" id="notifState" style="margin-top:8px">${notifStateText()}</p>
     <p class="hint">ແຈ້ງເຕືອນ browser ເຮັດວຽກໄດ້ເມື່ອເວັບເປີດຄ້າງໄວ້ເທົ່ານັ້ນ. ເພື່ອໃຫ້ເຕືອນໃນມືຖືເຖິງແມ່ນບໍ່ໄດ້ເປີດເວັບ ໃຫ້ດາວໂຫຼດໄຟລ໌ .ics ແລ້ວເປີດເພີ່ມເຂົ້າປະຕິທິນ (Google Calendar / iPhone) — ຈະເຕືອນຊ້ຳທຸກອາທິດ.</p></div>
@@ -929,9 +973,13 @@ function onField(t){
     if(f==='labHours'){ w.labour=w.labour||{}; w.labour.hours=v; }
     t.value=v==null?'':fi(v); save(); refreshCalc(); return;
   }
-  if(f==='remindOn'){ state.settings.remindOn=t.checked; save(); render(); return; }
-  if(f==='remindTime'){ state.settings.remindTime=t.value||'08:00'; state.settings.lastNotify=''; save(); return; }
-  if(f==='branch'){ state.settings.branch=t.value; save(); renderChrome(); return; }
+  if(f==='remindOn'){ ROOT.remind.on=t.checked; save(); render(); return; }
+  if(f==='remindTime'){ ROOT.remind.time=t.value||'08:00'; ROOT.remind.last=''; save(); return; }
+  if(f==='branch'){ state.settings.branch=t.value.trim()||state.settings.branch; save(); renderChrome(); return; }
+  if(f==='mTarget'){ const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; } state.monthTargets[ui.month]=v||0; save(); render(); return; }
+  if(f==='costLimit'){ const v=parseExpr(t.value); if(v>0&&v<100){ state.settings.costLimit=v/100; save(); render(); } return; }
+  if(f==='varTol'){ const v=parseExpr(t.value); if(v>=0&&v<100){ state.settings.varTol=v/100; save(); render(); } return; }
+  if(f==='mdate'){ ui.mdate=t.value||null; saveUI(); render(); return; }
   if(f==='staff'){ state.settings.staff=t.value; save(); return; }
   if(f==='todo'){ ui.todo=t.checked; saveUI(); render(); return; }
   if(f==='poOnly'){ ui.poOnly=t.checked; saveUI(); render(); return; }
@@ -993,7 +1041,7 @@ function weekCSV(w){
   const S=wsum(w); rows.push([],['ຕົ້ນທຶນລວມ','','','','','','','','','','','',Math.round(S.cost)]);
   return rows;
 }
-function backup(){ download(`inventory-backup-${toISO(new Date())}.json`, JSON.stringify(state,null,1), 'application/json'); toast('ດາວໂຫຼດໄຟລ໌ສຳຮອງແລ້ວ'); }
+function backup(){ download(`inventory-backup-${toISO(new Date())}.json`, JSON.stringify(ROOT,null,1), 'application/json'); toast('ດາວໂຫຼດໄຟລ໌ສຳຮອງແລ້ວ'); }
 
 /* ============ ຕົວຈັດການເຫດການ ============ */
 document.addEventListener('click', e=>{
@@ -1039,6 +1087,21 @@ document.addEventListener('click', e=>{
     case 'exportOrder': { const rows=[['ລາຍການ','ໜ່ວຍ','ຄົງເຫຼືອ','ຄວນສັ່ງ']]; orderRows().forEach(r=>rows.push([r.it.name,r.it.unit,r.stock,r.s])); download(`order-${toISO(new Date())}.csv`,toCSV(rows),'text/csv'); break; }
     case 'copyOrder': { const t=`ລາຍການສັ່ງຊື້ ${state.settings.branch} (${toISO(new Date())})\n`+orderRows().map(r=>`- ${r.it.name}: ${fn(r.s)} ${r.it.unit}`).join('\n'); (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>toast('ຄັດລອກແລ້ວ'),()=>{ openModal(`<h3>ຄັດລອກລາຍການ</h3><textarea rows="12" style="width:100%">${esc(t)}</textarea><div class="mfoot"><button class="btn" data-act="closeModal">ປິດ</button></div>`); }); break; }
     case 'backup': backup(); break;
+    case 'spreadTarget': { const mt=n0(state.monthTargets[ui.month]); const W=sortedWeeks().filter(x=>x.start.slice(0,7)===ui.month); if(!(mt>0)||!W.length){ toast('ໃສ່ເປົ້າລວມຂອງເດືອນກ່ອນ'); break; } const td=W.reduce((s,x)=>s+x.days,0); let used=0; W.forEach((x,i)=>{ x.target = i===W.length-1 ? mt-used : Math.round(mt*x.days/td); used+=x.target; }); save(); render(); toast('ກະຈາຍເປົ້າເຂົ້າແຕ່ລະອາທິດແລ້ວ'); break; }
+    case 'posParse': { const tx=$('#posPaste').value; if(!tx.trim()){ toast('ວາງຂໍ້ມູນກ່ອນ'); break; } setPOSImport('ຂໍ້ມູນທີ່ວາງ',parseCSV(tx)); break; }
+    case 'posCancel': POSIMP=null; render(); break;
+    case 'posApply': applyPOS(); break;
+    case 'posRecipe': openRecipe(decodeURIComponent(b.dataset.n)); break;
+    case 'rcAdd': $('#rcRows').insertAdjacentHTML('beforeend',recipeRow({id:'',q:''})); break;
+    case 'rcDel': b.closest('[data-rcrow]').remove(); break;
+    case 'rcSave': saveRecipe(); break;
+    case 'posClear': confirmBox('ລຶບຂໍ້ມູນ POS ຂອງອາທິດນີ້?','ຈະລຶບລາຍການເມນູ ແລະ ຈຳນວນທີ່ຂາຍຈາກ POS ຂອງອາທິດນີ້. ຍອດຂາຍທີ່ຖືກຕື່ມໃສ່ແຖວຍອດຂາຍຈະບໍ່ຖືກລຶບ.',()=>{ const w=curWeek(); delete w.pos; save(); render(); },'ລຶບ'); break;
+    case 'mmode': ui.mmode=v; saveUI(); render(); break;
+    case 'brNew': openNewBranch(); break;
+    case 'brCreate': createBranch(); break;
+    case 'brManage': openManage(); break;
+    case 'brOpen': closeModal(); setActive(id); setTab('overview'); break;
+    case 'brDel': { const br=ROOT.branches.find(x=>x.id===id); confirmBox('ລຶບສາຂາ?',`ລຶບ <b>${esc(bName(br))}</b> ພ້ອມຂໍ້ມູນທັງໝົດຂອງສາຂານີ້ (ສະຕັອກ, ຍອດຂາຍ, ໃບສັ່ງຊື້, ຂອງເສຍ) ຖາວອນ. ຄວນດາວໂຫຼດສຳຮອງກ່ອນ.`,()=>{ ROOT.branches=ROOT.branches.filter(x=>x.id!==id); if(ROOT.active===id){ setActive(ROOT.branches[0].id); } else { save(); render(); } openManage(); },'ລຶບສາຂາ'); break; }
     case 'enableNotif': enableNotif(); break;
     case 'icsReminder': downloadICS(); break;
     case 'goCount': setTab('count'); break;
@@ -1058,14 +1121,26 @@ document.addEventListener('click', e=>{
     case 'poAssign': poAssign(); break;
     case 'poDup': { const po=curPO(); const c=clone(po); c.id=uid('po'); const t=toISO(new Date()); c.date=t; c.delivery=addDays(t,2); c.status='draft'; c.receivedDate=null; c.no=`PO-${t.replace(/-/g,'').slice(2)}-${pad(state.pos.filter(p=>p.date===t).length+1)}`; state.pos.push(c); ui.poId=c.id; save(); saveUI(); render(); toast('ສຳເນົາໃບສັ່ງຊື້ແລ້ວ'); break; }
     case 'restore': $('#restoreFile').click(); break;
-    case 'resetSeed': confirmBox('ໃຊ້ຂໍ້ມູນຈາກ Excel ໃໝ່?','ຂໍ້ມູນທີ່ແກ້ໄຂ/ເພີ່ມໃໝ່ທັງໝົດຈະຖືກແທນທີ່ດ້ວຍຂໍ້ມູນຕົ້ນສະບັບ.',()=>{ state=defaultState(); ui.wid=null; save(); render(); toast('ກັບຄືນຂໍ້ມູນຕົ້ນສະບັບແລ້ວ'); },'ແທນທີ່'); break;
+    case 'resetSeed': confirmBox('ໃຊ້ຂໍ້ມູນຈາກ Excel ໃໝ່?','ຂໍ້ມູນທີ່ແກ້ໄຂ/ເພີ່ມໃໝ່ທັງໝົດຈະຖືກແທນທີ່ດ້ວຍຂໍ້ມູນຕົ້ນສະບັບ.',()=>{ replaceActive(defaultState()); ui.wid=null; save(); render(); toast('ກັບຄືນຂໍ້ມູນຕົ້ນສະບັບແລ້ວ'); },'ແທນທີ່'); break;
     case 'clearWeeks': confirmBox('ລຶບຂໍ້ມູນອາທິດທັງໝົດ?','ຈະເກັບລາຍການສິນຄ້າ ແລະ ລາຄາໄວ້ ແຕ່ລຶບຂໍ້ມູນອາທິດ, ຍອດຂາຍ ແລະ ຂອງເສຍທັງໝົດ. ຄວນດາວໂຫຼດສຳຮອງກ່ອນ.',()=>{ state.weeks=[]; state.waste=[]; ui.wid=null; save(); render(); },'ລຶບທັງໝົດ'); break;
   }
 });
 document.addEventListener('change', e=>{
   const t=e.target;
+  if(t.id==='branchSel'){ setActive(t.value); return; }
   if(t.id==='weekSel'){ ui.wid=t.value; saveUI(); render(); return; }
   if(t.matches('input.cell[data-k]')){ onCell(t); return; }
+  if(t.id==='posFile' && t.files[0]){
+    const f=t.files[0];
+    if(/\.(xlsx|xls)$/i.test(f.name)){
+      const fr=new FileReader(); fr.onload=()=>{ loadXLSX().then(()=>{ try{ const wb=XLSX.read(fr.result,{type:'array',cellDates:true}); let best=null; wb.SheetNames.forEach(n=>{ const r=XLSX.utils.sheet_to_json(wb.Sheets[n],{header:1,raw:true,defval:''}); if(!best||r.length>best.length) best=r; }); setPOSImport(f.name,(best||[]).filter(r=>r.some(x=>String(x).trim()!==''))); }catch(e){ toast('ອ່ານໄຟລ໌ Excel ບໍ່ໄດ້ — ລອງບັນທຶກເປັນ CSV'); } },()=>toast('ໂຫຼດຕົວອ່ານ Excel ບໍ່ໄດ້ (ຕ້ອງມີອິນເຕີເນັດ) — ບັນທຶກເປັນ CSV ແລ້ວນຳເຂົ້າ')); };
+      fr.readAsArrayBuffer(f);
+    } else { const fr=new FileReader(); fr.onload=()=>setPOSImport(f.name,parseCSV(String(fr.result))); fr.readAsText(f); }
+    return; }
+  if(t.dataset.pi){ const k=t.dataset.pi; if(!POSIMP) return; if(k==='hdr'){ POSIMP.hdr=Math.max(0,(+t.value||1)-1); POSIMP.map=guessMap(POSIMP.rows[POSIMP.hdr]||[]); } else if(k==='upd'){ POSIMP.updateLines=t.checked; } else POSIMP.map[k]=+t.value; render(); return; }
+  if(t.dataset.pn){ const n=decodeURIComponent(t.dataset.pn), pm=pmSet(n); pm[t.dataset.p]=t.value; if(t.dataset.p==='line'&&t.value){ const l=(curWeek().sales.lines.find(x=>x.id===t.value)||{}); if(l.g) pm.g=l.g; } state.weeks.forEach(x=>{ if(x.pos&&x.pos.items[n]) syncLines(x); }); save(); render(); return; }
+  if(t.dataset.wt){ const w=state.weeks.find(x=>x.id===t.dataset.wt); const v=parseExpr(t.value); if(w&&!Number.isNaN(v)){ w.target=v||0; save(); render(); } return; }
+  if(t.dataset.brn){ const br=ROOT.branches.find(x=>x.id===t.dataset.brn); const v=t.value.trim(); if(br&&v){ br.data.settings.branch=v; save(); renderChrome(); } else if(br) t.value=bName(br); return; }
   if(t.dataset.po){ const po=curPO(); if(!po||po.status==='received') return; po[t.dataset.po]=t.value; save(); if(t.dataset.po==='no') render(); return; }
   if(t.dataset.pq||t.dataset.pp){ const po=curPO(); if(!po||po.status==='received') return; const id=t.dataset.pq||t.dataset.pp; const v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; }
     const it=itemById(id); const l=po.lines[id]||(po.lines[id]={qty:0,price:it.price}); if(t.dataset.pq){ l.qty=v||0; t.value=v?fq(v):''; } else { l.price=v||0; t.value=fi(v||0); }
@@ -1087,7 +1162,7 @@ document.addEventListener('change', e=>{
     save(); toast('ບັນທຶກແລ້ວ'); return; }
   if(t.dataset.min){ const it=itemById(t.dataset.min), v=parseExpr(t.value); if(Number.isNaN(v)){ toast('ຕົວເລກບໍ່ຖືກຕ້ອງ'); return; } it.min=v; save(); render(); return; }
   if(t.id==='restoreFile' && t.files[0]){
-    const fr=new FileReader(); fr.onload=()=>{ try{ const s=JSON.parse(fr.result); if(!s.items||!s.weeks) throw 0; confirmBox('ກູ້ຄືນຂໍ້ມູນ?','ຂໍ້ມູນປັດຈຸບັນຈະຖືກແທນທີ່ດ້ວຍໄຟລ໌ສຳຮອງ.',()=>{ state=s; state.waste=state.waste||[]; ui.wid=null; save(); render(); toast('ກູ້ຄືນຂໍ້ມູນແລ້ວ'); },'ກູ້ຄືນ'); }catch(err){ toast('ໄຟລ໌ບໍ່ຖືກຕ້ອງ'); } t.value=''; }; fr.readAsText(t.files[0]);
+    const fr=new FileReader(); fr.onload=()=>{ try{ const s=JSON.parse(fr.result); if(!(s.branches||(s.items&&s.weeks))) throw 0; confirmBox('ກູ້ຄືນຂໍ້ມູນ?','ຂໍ້ມູນປັດຈຸບັນຈະຖືກແທນທີ່ດ້ວຍໄຟລ໌ສຳຮອງ.',()=>{ restoreFrom(s); ui.wid=null; save(); render(); toast('ກູ້ຄືນຂໍ້ມູນແລ້ວ'); },'ກູ້ຄືນ'); }catch(err){ toast('ໄຟລ໌ບໍ່ຖືກຕ້ອງ'); } t.value=''; }; fr.readAsText(t.files[0]);
   }
 });
 document.addEventListener('input', e=>{
@@ -1254,14 +1329,16 @@ function poReceive(po){
 
 /* ============ ແຈ້ງເຕືອນນັບສະຕັອກວັນຈັນ ============ */
 function remindHTML(){
-  if(!state.settings.remindOn) return '';
+  if(!ROOT.remind.on) return '';
   const t=toISO(new Date()), d=dow(t), arr=sortedWeeks(); if(!arr.length) return '';
   const w=arr.find(x=>t>=x.start&&t<=wEnd(x)) || arr[arr.length-1];
   const S=wsum(w);
+  const others = d===1 ? pendingBranches(t).filter(o=>o.n!==bName(activeBranch())) : [];
+  const oTxt = others.length ? ` · ສາຂາອື່ນຍັງບໍ່ໄດ້ນັບ: ${others.map(o=>esc(o.n)+' ('+o.k+')').join(', ')}` : '';
   if(d===1){
     return S.todo.length
-      ? `<div class="banner bad"><span><b>ວັນນີ້ວັນຈັນ — ມື້ນັບສະຕັອກ!</b> ອາທິດນີ້ຍັງເຫຼືອ ${S.todo.length} ລາຍການທີ່ຍັງບໍ່ໄດ້ນັບ</span><button class="btn sm primary" data-act="goCount">ໄປນັບສະຕັອກ</button></div>`
-      : `<div class="banner info"><span>ວັນນີ້ວັນຈັນ — ນັບສະຕັອກຄົບທຸກລາຍການແລ້ວ ✓ ຢ່າລືມລັອກອາທິດ ແລະ ເປີດອາທິດໃໝ່</span></div>`;
+      ? `<div class="banner bad"><span><b>ວັນນີ້ວັນຈັນ — ມື້ນັບສະຕັອກ!</b> ອາທິດນີ້ຍັງເຫຼືອ ${S.todo.length} ລາຍການທີ່ຍັງບໍ່ໄດ້ນັບ${oTxt}</span><button class="btn sm primary" data-act="goCount">ໄປນັບສະຕັອກ</button></div>`
+      : `<div class="banner info"><span>ວັນນີ້ວັນຈັນ — ນັບສະຕັອກຄົບທຸກລາຍການແລ້ວ ✓ ຢ່າລືມລັອກອາທິດ ແລະ ເປີດອາທິດໃໝ່${oTxt}</span></div>`;
   }
   if(t>wEnd(w) && S.todo.length) return `<div class="banner warn"><span><b>ເກີນກຳນົດນັບ:</b> ${esc(weekFull(w))} ຈົບແລ້ວ ແຕ່ຍັງບໍ່ໄດ້ນັບ ${S.todo.length} ລາຍການ</span><button class="btn sm" data-act="goCount">ໄປນັບ</button></div>`;
   if(ui.tab==='overview'||ui.tab==='count'){ const k=(8-d)%7||7; return `<p class="hint" style="margin:0 0 10px">ວັນນັບສະຕັອກຖັດໄປ: ວັນຈັນ ທີ ${dShort(addDays(t,k))} (ອີກ ${k} ວັນ)</p>`; }
@@ -1275,17 +1352,20 @@ function enableNotif(){
   if(!('Notification' in window)){ toast('browser ນີ້ບໍ່ຮອງຮັບ'); return; }
   Notification.requestPermission().then(p=>{ const el=$('#notifState'); if(el) el.textContent=notifStateText(); if(p==='granted'){ new Notification('ເປີດການແຈ້ງເຕືອນແລ້ວ',{body:'ຈະເຕືອນນັບສະຕັອກທຸກວັນຈັນ ຕາມເວລາທີ່ຕັ້ງ'}); } });
 }
+function pendingBranches(t){
+  return ROOT.branches.map(b=>({n:bName(b),k:withBranch(b.id,()=>{ const arr=sortedWeeks(); const ww=arr.find(x=>t>=x.start&&t<=wEnd(x))||arr[arr.length-1]; return ww?wsum(ww).todo.length:0; })})).filter(o=>o.k>0);
+}
 function checkNotify(){
-  const s=state.settings; if(!s.remindOn||!('Notification' in window)||Notification.permission!=='granted') return;
+  const r=ROOT.remind; if(!r.on||!('Notification' in window)||Notification.permission!=='granted') return;
   const now=new Date(); if(now.getDay()!==1) return;
-  const [h,m]=(s.remindTime||'08:00').split(':').map(Number); if(now.getHours()*60+now.getMinutes()<h*60+m) return;
-  const t=toISO(now); if(s.lastNotify===t) return;
-  const w=curWeek(); const S=w?wsum(w):null; if(S&&S.todo.length===0) return;
-  s.lastNotify=t; save();
-  try{ new Notification('ວັນຈັນ — ມື້ນັບສະຕັອກ',{body:S?`ຍັງເຫຼືອ ${S.todo.length} ລາຍການທີ່ຍັງບໍ່ໄດ້ນັບ`:'ເຖິງເວລານັບສະຕັອກປະຈຳອາທິດແລ້ວ'}); }catch(e){}
+  const [h,m]=(r.time||'08:00').split(':').map(Number); if(now.getHours()*60+now.getMinutes()<h*60+m) return;
+  const t=toISO(now); if(r.last===t) return;
+  const pend=pendingBranches(t); if(!pend.length) return;
+  r.last=t; save();
+  try{ new Notification('ວັນຈັນ — ມື້ນັບສະຕັອກ',{body:pend.map(o=>`${o.n}: ເຫຼືອ ${o.k} ລາຍການ`).join(' · ')}); }catch(e){}
 }
 function downloadICS(){
-  const [h,m]=(state.settings.remindTime||'08:00').split(':'); const t=toISO(new Date()); const k=(8-dow(t))%7; const first=addDays(t,k).replace(/-/g,'');
+  const [h,m]=(ROOT.remind.time||'08:00').split(':'); const t=toISO(new Date()); const k=(8-dow(t))%7; const first=addDays(t,k).replace(/-/g,'');
   const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//PotatoCorner Inventory//LO','BEGIN:VEVENT','UID:pc-monday-count@inventory','DTSTAMP:'+t.replace(/-/g,'')+'T000000Z',
    `DTSTART:${first}T${h}${m}00`,`DTEND:${first}T${h}${m}00`.replace(/T(\d\d)(\d\d)00$/,(x,a,b)=>`T${a}${b}00`),'RRULE:FREQ=WEEKLY;BYDAY=MO','SUMMARY:ນັບສະຕັອກ '+state.settings.branch,'DESCRIPTION:ວັນຈັນ — ມື້ນັບສະຕັອກປະຈຳອາທິດ ແລະ ເຮັດໃບສັ່ງຊື້',
    'BEGIN:VALARM','TRIGGER:PT0M','ACTION:DISPLAY','DESCRIPTION:ນັບສະຕັອກ','END:VALARM','END:VEVENT','END:VCALENDAR'].join('\r\n');
@@ -1293,8 +1373,306 @@ function downloadICS(){
 }
 setInterval(()=>{ try{ checkNotify(); }catch(e){} },60000);
 
+
+/* ============ ຫຼາຍສາຂາ ============ */
+function branchStats(b){
+  return withBranch(b.id,()=>{
+    const ref=ui.mdate||toISO(new Date()), arr=sortedWeeks();
+    if(ui.mmode==='month'){
+      const A=monthAgg(ref.slice(0,7)); if(!A) return {empty:true};
+      const S=wsum(A.last), tg=monthTarget(ref.slice(0,7));
+      return {label:monthName(ref.slice(0,7)),net:A.sales.net,target:tg,cost:A.cost,stock:A.stock,counted:S.counted,count:S.count,todo:S.todo.length,waste:A.wasteCost,neg:S.neg.length,lim:n0(state.settings.costLimit)||0.35};
+    }
+    const w=arr.find(x=>ref>=x.start&&ref<=wEnd(x))||arr.filter(x=>x.start<=ref).pop(); if(!w) return {empty:true};
+    const S=wsum(w), SL=salesOf(w);
+    const waste=state.waste.filter(x=>x.date>=w.start&&x.date<=wEnd(w)).reduce((s,x)=>s+wasteVal(x),0);
+    return {label:weekFull(w),net:SL.net,target:n0(w.target),cost:S.cost,stock:S.stock,counted:S.counted,count:S.count,todo:S.todo.length,waste,neg:S.neg.length,lim:n0(state.settings.costLimit)||0.35};
+  });
+}
+function V_branches(){
+  const ref=ui.mdate||toISO(new Date());
+  const rows=ROOT.branches.map(b=>({b,s:branchStats(b)}));
+  const ok=rows.filter(r=>!r.s.empty);
+  const T=ok.reduce((t,r)=>{ t.net+=r.s.net; t.target+=r.s.target; t.cost+=r.s.cost; t.stock+=r.s.stock; t.waste+=r.s.waste; return t; },{net:0,target:0,cost:0,stock:0,waste:0});
+  return `<div class="view-title"><div><h2>ມອນິເຕີທຸກສາຂາ</h2><p>ປຽບທຽບທຸກສາຂາໃນບ່ອນດຽວ — ແຕ່ລະສາຂາມີສະຕັອກ, ຍອດຂາຍ, ໃບສັ່ງຊື້ ແລະ ຂອງເສຍແຍກກັນ. ກົດ "ເປີດ" ເພື່ອເຂົ້າໄປແກ້ໄຂສາຂານັ້ນ</p></div>
+   <div class="actions"><button class="pill ${ui.mmode==='week'?'on':''}" data-act="mmode" data-v="week">ຕາມອາທິດ</button><button class="pill ${ui.mmode==='month'?'on':''}" data-act="mmode" data-v="month">ຕາມເດືອນ</button>
+   <input type="date" data-f="mdate" value="${ref}" style="width:auto" aria-label="ວັນທີອ້າງອີງ"><button class="btn" data-act="brManage">ຈັດການສາຂາ</button><button class="btn primary" data-act="brNew">+ ເພີ່ມສາຂາ</button></div></div>
+  <div class="grid kpis">
+   <div class="card kpi"><div class="lbl">ຍອດຂາຍສຸດທິ ທຸກສາຂາ</div><div class="val">${fm(T.net)} ₭</div></div>
+   <div class="card kpi"><div class="lbl">ຂາຍໄດ້ ຂອງເປົ້າໝາຍລວມ</div><div class="val">${fp(T.target>0?T.net/T.target:null)}</div><div class="sub">ເປົ້າລວມ ${fm(T.target)} ₭</div></div>
+   <div class="card kpi"><div class="lbl">ຕົ້ນທຶນ / ຍອດຂາຍ</div><div class="val">${fp(T.net>0?T.cost/T.net:null)}</div><div class="sub">ຕົ້ນທຶນ ${fm(T.cost)} ₭</div></div>
+   <div class="card kpi"><div class="lbl">ມູນຄ່າສະຕັອກທຸກສາຂາ</div><div class="val">${fm(T.stock)} ₭</div><div class="sub">ຂອງເສຍ ${fm(T.waste)} ₭</div></div></div>
+  <div class="sp"></div>
+  <div class="tbl-wrap"><table class="plain"><thead><tr><th>ສາຂາ</th><th>ຊ່ວງເວລາ</th><th>ຍອດຂາຍສຸດທິ</th><th>ເປົ້າໝາຍ</th><th>% ເປົ້າ</th><th>ຕົ້ນທຶນ</th><th>ຕົ້ນທຶນ %</th><th>ມູນຄ່າສະຕັອກ</th><th>ການນັບສະຕັອກ</th><th>ຂອງເສຍ</th><th></th></tr></thead><tbody>
+  ${rows.map(({b,s})=> s.empty ? `<tr><td><b>${esc(bName(b))}</b>${b.id===ROOT.active?' <span class="chip">ກຳລັງໃຊ້</span>':''}</td><td colspan="9" class="muted">ຍັງບໍ່ມີຂໍ້ມູນໃນຊ່ວງນີ້ (ຍັງບໍ່ໄດ້ເປີດອາທິດ)</td><td><button class="btn sm" data-act="brOpen" data-i="${b.id}">ເປີດ</button></td></tr>` :
+   `<tr><td><b>${esc(bName(b))}</b>${b.id===ROOT.active?' <span class="chip">ກຳລັງໃຊ້</span>':''}</td><td style="font-size:12.5px">${esc(s.label)}</td><td class="num">${fm(s.net)}</td><td class="num">${s.target?fm(s.target):'—'}</td>
+    <td class="num" style="min-width:110px">${s.target>0?`<b>${fp(s.net/s.target)}</b><div class="bar ${s.net>=s.target?'ok':''}" style="margin-top:4px"><i style="width:${Math.min(100,Math.round(s.net/s.target*100))}%"></i></div>`:'—'}</td>
+    <td class="num">${fm(s.cost)}</td><td class="num">${fp(s.net>0?s.cost/s.net:null)}${s.net>0&&s.cost/s.net>s.lim?' <span class="chip bad">ເກີນເກນ</span>':''}</td><td class="num">${fm(s.stock)}</td>
+    <td style="text-align:center">${s.todo?`<span class="chip warn">ຍັງບໍ່ນັບ ${s.todo}</span>`:'<span class="chip ok">ນັບຄົບ</span>'}${s.neg?` <span class="chip bad">ຜິດປົກກະຕິ ${s.neg}</span>`:''}</td>
+    <td class="num">${fm(s.waste)}</td><td><button class="btn sm" data-act="brOpen" data-i="${b.id}">ເປີດ</button></td></tr>`).join('')}
+  ${ok.length>1?`<tr class="tot"><td>ລວມ</td><td></td><td class="num">${fm(T.net)}</td><td class="num">${fm(T.target)}</td><td class="num">${fp(T.target>0?T.net/T.target:null)}</td><td class="num">${fm(T.cost)}</td><td class="num">${fp(T.net>0?T.cost/T.net:null)}</td><td class="num">${fm(T.stock)}</td><td></td><td class="num">${fm(T.waste)}</td><td></td></tr>`:''}
+  </tbody></table></div>
+  <p class="hint">ເລືອກວັນທີອ້າງອີງ ເພື່ອເບິ່ງອາທິດ/ເດືອນທີ່ມີວັນນັ້ນຂອງທຸກສາຂາ. ສາຂາທີ່ບໍ່ມີອາທິດຄອບຄຸມວັນນັ້ນ ຈະສະແດງອາທິດຫຼ້າສຸດກ່ອນໜ້າ.</p>`;
+}
+function openNewBranch(){
+  openModal(`<h3>ເພີ່ມສາຂາໃໝ່</h3>
+   <label class="f">ຊື່ສາຂາ</label><input type="text" id="nbName" placeholder="ເຊັ່ນ POTATO CORNER ..."><div class="sp"></div>
+   <label class="f">ຜູ້ຮັບຜິດຊອບ</label><input type="text" id="nbStaff"><div class="sp"></div>
+   <label class="f">ລາຍການສິນຄ້າ ແລະ ລາຄາ ເລີ່ມຕົ້ນຈາກ</label><select id="nbFrom" style="width:100%">${ROOT.branches.map(b=>`<option value="${b.id}" ${b.id===ROOT.active?'selected':''}>ຄັດລອກຈາກ ${esc(bName(b))}</option>`).join('')}<option value="seed">ແບບຕົ້ນສະບັບ (ຈາກ Excel)</option></select>
+   <p class="hint">ສາຂາໃໝ່ຈະໄດ້ທຸກຟັງຊັນຄືກັນ (ນັບສະຕັອກ, ຕາຕະລາງອາທິດ, ຍອດຂາຍ/ເປົ້າໝາຍ, ໃບສັ່ງຊື້, ຂອງເສຍ, ແຈ້ງເຕືອນວັນຈັນ) ໂດຍມີສະຕັອກເປົ່າ. ຄັດລອກສະເພາະລາຍການ, ລາຄາ, ບາໂຄດ ແລະ ຂັ້ນຕ່ຳ — ບໍ່ຄັດລອກຍອດນັບ/ຍອດຂາຍ. ຫຼັງຈາກນັ້ນກົດ "ເປີດອາທິດໃໝ່" ແລ້ວພິມຍອດຍົກມາເລີ່ມຕົ້ນໃນຕາຕະລາງອາທິດ.</p>
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="brCreate">ສ້າງສາຂາ</button></div>`);
+}
+function createBranch(){
+  const nm=$('#nbName').value.trim(); if(!nm){ toast('ກະລຸນາໃສ່ຊື່ສາຂາ'); return; }
+  if(ROOT.branches.some(b=>bName(b).toLowerCase()===nm.toLowerCase())){ toast('ມີສາຂາຊື່ນີ້ແລ້ວ'); return; }
+  const from=$('#nbFrom').value; const srcItems = from==='seed' ? clone(SEED.items) : clone(ROOT.branches.find(b=>b.id===from).data.items);
+  const d=migrate({v:1,settings:{branch:nm,staff:$('#nbStaff').value.trim()},items:srcItems,weeks:[],waste:[],pos:[]});
+  const id=uid('b'); ROOT.branches.push({id,data:d}); closeModal(); setActive(id); toast('ເພີ່ມສາຂາ "'+nm+'" ແລ້ວ — ກົດ "ເປີດອາທິດໃໝ່" ເພື່ອເລີ່ມ');
+}
+function openManage(){
+  openModal(`<h3>ຈັດການສາຂາ</h3>
+   ${ROOT.branches.map(b=>`<div class="row" style="grid-template-columns:1fr auto auto;gap:8px;margin-bottom:8px;align-items:center"><input type="text" data-brn="${b.id}" value="${esc(bName(b))}"><button class="btn sm" data-act="brOpen" data-i="${b.id}">ເປີດ</button><button class="btn sm danger" data-act="brDel" data-i="${b.id}" ${ROOT.branches.length<2?'disabled':''}>ລຶບ</button></div>`).join('')}
+   <div class="mfoot"><button class="btn" data-act="brNew">+ ເພີ່ມສາຂາ</button><button class="btn primary" data-act="closeModal">ປິດ</button></div>`);
+}
+
+
+/* ============ ເປົ້າໝາຍເດືອນ ============ */
+function monthTargetCard(A){
+  const ym=ui.month, mt=n0(state.monthTargets[ym]), sumW=A.W.reduce((s,x)=>s+n0(x.target),0);
+  const diff = mt>0 ? sumW-mt : 0;
+  return `<div class="card" style="margin-bottom:14px"><h3>ເປົ້າໝາຍຍອດຂາຍ — ແຕ່ລະອາທິດ (ອ.1–ອ.${A.W.length}) ແລະ ເປົ້າລວມທັງເດືອນ</h3>
+   <div class="row cols2"><div><label class="f">ເປົ້າໝາຍລວມທັງເດືອນ (₭)</label><input type="text" inputmode="decimal" style="text-align:right;font-size:18px" data-f="mTarget" value="${mt?fi(mt):''}" placeholder="ເຊັ່ນ 500,000,000"></div>
+   <div style="display:flex;align-items:flex-end"><button class="btn" data-act="spreadTarget">ກະຈາຍເປົ້າເດືອນເຂົ້າແຕ່ລະອາທິດ (ຕາມຈຳນວນວັນ)</button></div></div><div class="sp"></div>
+   <div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ອາທິດ</th><th>ຊ່ວງ</th><th>ເປົ້າໝາຍ (₭)</th><th>ຂາຍສຸດທິ</th><th>% ເປົ້າ</th><th>ເຫຼືອ</th></tr></thead><tbody>
+   ${A.W.map((w,i)=>{ const net=salesOf(w).net, tg=n0(w.target); return `<tr><td>ອາທິດ ${i+1}</td><td>${weekLabel(w)}</td><td><input class="cell wide" type="text" inputmode="decimal" data-wt="${w.id}" value="${tg?fi(tg):''}" placeholder="0"></td><td class="num">${fm(net)}</td>
+     <td class="num ${tg>0&&net>=tg?'':''}">${tg>0?fp(net/tg):'—'}</td><td class="num">${tg>0?fm(Math.max(0,tg-net)):'—'}</td></tr>`; }).join('')}
+   <tr class="tot"><td>ລວມອາທິດ</td><td></td><td class="num">${fm(sumW)}</td><td class="num">${fm(A.sales.net)}</td><td class="num">${sumW>0?fp(A.sales.net/sumW):'—'}</td><td class="num">${sumW>0?fm(Math.max(0,sumW-A.sales.net)):'—'}</td></tr>
+   ${mt>0?`<tr class="tot"><td>ເປົ້າລວມເດືອນ</td><td></td><td class="num">${fm(mt)}</td><td class="num">${fm(A.sales.net)}</td><td class="num">${fp(A.sales.net/mt)}</td><td class="num">${fm(Math.max(0,mt-A.sales.net))}</td></tr>`:''}
+   </tbody></table></div>
+   ${mt>0&&Math.abs(diff)>1?`<p class="hint" style="margin:8px 0 0;color:var(--warn)">ຜົນລວມເປົ້າອາທິດ ${diff>0?'ເກີນ':'ຂາດ'} ເປົ້າເດືອນ ${fm(Math.abs(diff))} ₭ — ກົດ "ກະຈາຍເປົ້າເດືອນ" ເພື່ອປັບໃຫ້ກົງກັນ</p>`:''}</div>`;
+}
+
+/* ============ ນຳເຂົ້າ POS ============ */
+let POSIMP = null;
+const guessGroup = n => /coke|fanta|sprite|pepsi|water|drink|juice|tea|coffee|soda|ນ້ຳ|ເຄື່ອງດື່ມ/i.test(n)?'bev':'food';
+const pmGet = n => state.posMap[n] || {g:guessGroup(n),line:'',recipe:[]};
+function pmSet(n){ return state.posMap[n] || (state.posMap[n]={g:guessGroup(n),line:'',recipe:[]}); }
+function numAny(v){ if(typeof v==='number') return isFinite(v)?v:0; const x=parseFloat(String(v==null?'':v).replace(/[^0-9.\-]/g,'')); return isFinite(x)?x:0; }
+function parseDateAny(v){
+  if(v instanceof Date && !isNaN(v)){ const d=new Date(v.getTime()+12*3600e3); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
+  if(typeof v==='number' && v>20000 && v<80000){ const d=new Date(Date.UTC(1899,11,30)+Math.floor(v)*864e5); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth()+1)}-${pad(d.getUTCDate())}`; }
+  const s=String(v==null?'':v).trim(); let m;
+  if((m=s.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))) return `${m[1]}-${pad(+m[2])}-${pad(+m[3])}`;
+  if((m=s.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/))) return `${m[3]}-${pad(+m[2])}-${pad(+m[1])}`;
+  return null;
+}
+function parseCSV(text){
+  text=text.replace(/^﻿/,''); const first=text.split(/\r?\n/,1)[0]||'';
+  const delim=[',',';','\t','|'].map(d=>[d,first.split(d).length]).sort((x,y)=>y[1]-x[1])[0][0];
+  const rows=[]; let row=[],cell='',q=false;
+  for(let i=0;i<text.length;i++){ const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){cell+='"';i++;} else q=false; } else cell+=c; }
+    else if(c==='"') q=true; else if(c===delim){ row.push(cell); cell=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(cell); rows.push(row); row=[]; cell=''; }
+    else cell+=c; }
+  if(cell!==''||row.length){ row.push(cell); rows.push(row); }
+  return rows.filter(r=>r.some(x=>String(x).trim()!==''));
+}
+function guessHdr(rows){
+  for(let i=0;i<Math.min(15,rows.length-1);i++){ const c=rows[i].map(x=>String(x==null?'':x).trim()).filter(Boolean); if(c.length>=3 && c.filter(x=>isNaN(numAny(x))||/[a-zA-Z຀-໿฀-๿]/.test(x)).length>=c.length*0.6) return i; }
+  return 0;
+}
+function guessMap(hd){
+  const find=(...res)=>{ for(const re of res){ const i=hd.findIndex(h=>re.test(String(h))); if(i>=0) return i; } return -1; };
+  return {date:find(/date|ວັນທີ|วันที่|day/i), item:find(/item|product|menu|ລາຍການ|ສິນຄ້າ|ເມນູ|เมนู|สินค้า|name|description/i),
+          qty:find(/qty|quantity|ຈຳນວນ|จำนวน|pcs|units|sold|count/i), amt:find(/net|total|amount|sales|revenue|ຍອດ|ມູນຄ່າ|ยอด|รวม/i,/price|ລາຄາ|ราคา/i), disc:find(/discount|promo|ສ່ວນຫຼຸດ|ส่วนลด/i)};
+}
+function setPOSImport(file,rows){
+  if(!rows.length){ toast('ບໍ່ພົບຂໍ້ມູນໃນໄຟລ໌'); return; }
+  const hdr=guessHdr(rows); POSIMP={file,rows,hdr,map:guessMap(rows[hdr]||[]),updateLines:true}; render();
+}
+function posRow(r,m){
+  const name=String(r[m.item]==null?'':r[m.item]).trim(); if(!name || /^(total|sum|grand|ລວມ|รวม)/i.test(name)) return null;
+  return {name,qty:m.qty>=0?numAny(r[m.qty]):1,amt:m.amt>=0?numAny(r[m.amt]):0,disc:m.disc>=0?numAny(r[m.disc]):0,iso:m.date>=0?parseDateAny(r[m.date]):null};
+}
+function posPlan(){
+  const P=POSIMP, m=P.map, out={by:{},skipped:0,used:0,total:0,min:null,max:null}; if(m.item<0) return out;
+  const cw=curWeek(), W=sortedWeeks();
+  P.rows.slice(P.hdr+1).forEach(r=>{
+    const x=posRow(r,m); if(!x) return;
+    let w; if(m.date>=0){ if(!x.iso){ out.skipped++; return; } w=W.find(k=>x.iso>=k.start&&x.iso<=wEnd(k)); if(x.iso<(out.min||'9')) out.min=x.iso; if(x.iso>(out.max||'')) out.max=x.iso; } else w=cw;
+    if(!w){ out.skipped++; return; }
+    const B=out.by[w.id]||(out.by[w.id]={w,items:{},days:Array(w.days).fill(0),hasDays:m.date>=0,disc:0});
+    const it=B.items[x.name]||(B.items[x.name]={q:0,a:0}); it.q+=x.qty; it.a+=x.amt; B.disc+=x.disc;
+    if(m.date>=0) B.days[Math.round((parseD(x.iso)-parseD(w.start))/864e5)]+=x.amt;
+    out.used++; out.total+=x.amt;
+  });
+  return out;
+}
+function applyPOS(){
+  const P=POSIMP, plan=posPlan(), ids=Object.keys(plan.by);
+  if(P.map.item<0||P.map.amt<0){ toast('ຕ້ອງເລືອກຄໍລຳ "ຊື່ເມນູ" ແລະ "ຍອດເງິນ"'); return; }
+  if(!ids.length){ toast('ບໍ່ມີແຖວທີ່ກົງກັບອາທິດໃດ — ກວດຄໍລຳວັນທີ ແລະ ອາທິດທີ່ເປີດໄວ້'); return; }
+  const doIt=()=>{
+    ids.forEach(id=>{ const B=plan.by[id], w=B.w; w.pos={file:P.file,at:toISO(new Date()),items:B.items};
+      Object.keys(B.items).forEach(n=>pmSet(n));
+      if(B.hasDays) w.daily=B.days.slice();
+      if(P.map.disc>=0) w.sales.discount=B.disc;
+      if(P.updateLines) syncLines(w); });
+    POSIMP=null; save(); render(); toast(`ນຳເຂົ້າ POS ແລ້ວ ${ids.length} ອາທິດ`);
+  };
+  const over=ids.filter(id=>salesOf(plan.by[id].w).gross>0);
+  if(over.length) confirmBox('ແທນທີ່ຍອດຂາຍເດີມ?',`${over.length} ອາທິດມີຍອດຂາຍປ້ອນໄວ້ແລ້ວ — ການນຳເຂົ້າຈະແທນທີ່ຍອດຂາຍປະຈຳວັນ${P.updateLines?' ແລະ ແຖວຍອດຂາຍຕາມສິນຄ້າ':''} ຂອງອາທິດເຫຼົ່ານັ້ນດ້ວຍຂໍ້ມູນ POS.`,doIt,'ແທນທີ່ ແລະ ນຳເຂົ້າ'); else doIt();
+}
+function syncLines(w){
+  if(!w.pos) return;
+  const keep=w.sales.lines.filter(l=>!/^pos_/.test(l.id)); const sums={}; keep.forEach(l=>sums[l.id]=0);
+  const auto={pos_food:0,pos_bev:0,pos_other:0};
+  Object.entries(w.pos.items).forEach(([n,v])=>{ const pm=pmGet(n); if(pm.line&&sums[pm.line]!==undefined) sums[pm.line]+=v.a; else auto['pos_'+pm.g]+=v.a; });
+  keep.forEach(l=>l.amount=sums[l.id]||0);
+  const lab={pos_food:['POS ອາຫານ (ບໍ່ໄດ້ແມັບແຖວ)','food'],pos_bev:['POS ເຄື່ອງດື່ມ (ບໍ່ໄດ້ແມັບແຖວ)','bev'],pos_other:['POS ອື່ນໆ','other']};
+  Object.entries(auto).forEach(([id,amt])=>{ if(amt!==0) keep.push({id,label:lab[id][0],g:lab[id][1],amount:amt}); });
+  w.sales.lines=keep;
+}
+function theoUsage(w){
+  const m={}; Object.entries((w.pos&&w.pos.items)||{}).forEach(([n,v])=>{ (pmGet(n).recipe||[]).forEach(r=>{ if(r.id&&itemById(r.id)) m[r.id]=(m[r.id]||0)+v.q*r.q; }); });
+  return m;
+}
+function posCoverage(w){
+  const it=(w.pos&&w.pos.items)||{}; let all=0,cov=0; Object.entries(it).forEach(([n,v])=>{ all+=v.a; if((pmGet(n).recipe||[]).length) cov+=v.a; });
+  return all>0?cov/all:0;
+}
+function V_pos(){
+  const w=curWeek(); if(!w) return noWeek();
+  const P=POSIMP;
+  const importCard = !P ? `<div class="card" style="margin-bottom:14px"><h3>ນຳເຂົ້າຂໍ້ມູນຈາກເຄື່ອງ POS</h3>
+    <p class="hint" style="margin-top:0">ສົ່ງອອກລາຍງານການຂາຍຈາກ POS ເປັນໄຟລ໌ CSV ຫຼື Excel (ຕ້ອງມີຄໍລຳ: ວັນທີ, ຊື່ເມນູ/ສິນຄ້າ, ຈຳນວນ, ຍອດເງິນ; ສ່ວນຫຼຸດບໍ່ບັງຄັບ) ແລ້ວເລືອກໄຟລ໌ — ລະບົບຈະແຍກຕາມອາທິດຕາມວັນທີໃຫ້ເອງ ແລະ ຕື່ມຍອດຂາຍປະຈຳວັນ.</p>
+    <div class="row cols2"><div><label class="f">ເລືອກໄຟລ໌ (.csv / .xlsx / .xls)</label><input type="file" id="posFile" accept=".csv,.txt,.xlsx,.xls"></div>
+    <div><label class="f">ຫຼື ວາງຂໍ້ມູນທີ່ຄັດລອກຈາກ POS / Excel</label><textarea id="posPaste" rows="3" style="width:100%" placeholder="ວາງຕາຕະລາງລວມຫົວຖັນ..."></textarea><button class="btn sm" style="margin-top:6px" data-act="posParse">ອ່ານຂໍ້ມູນທີ່ວາງ</button></div></div></div>` : posImportCard();
+  const names=w.pos?Object.keys(w.pos.items):[];
+  const cov=posCoverage(w);
+  const lineOpts=sel=>`<option value="">ອັດຕະໂນມັດຕາມກຸ່ມ</option>`+w.sales.lines.filter(l=>!/^pos_/.test(l.id)).map(l=>`<option value="${l.id}" ${sel===l.id?'selected':''}>${esc(l.label)}</option>`).join('');
+  const tbl = names.length ? `<div class="card"><div class="view-title" style="margin-bottom:8px"><div><h3 style="margin:0">ເມນູຈາກ POS — ${esc(weekFull(w))}</h3><p class="muted" style="margin:2px 0 0">ໄຟລ໌: ${esc(w.pos.file)} · ນຳເຂົ້າ ${w.pos.at} · ສູດຄອບຄຸມ ${fp(cov)} ຂອງຍອດຂາຍ POS</p></div><div class="actions"><button class="btn sm danger" data-act="posClear">ລຶບຂໍ້ມູນ POS ອາທິດນີ້</button></div></div>
+    <p class="hint">"ສູດ" = ເມນູ 1 ຈານ/ຊຸດ ໃຊ້ວັດຖຸດິບຫຍັງຈາກສະຕັອກເທົ່າໃດ ເຊັ່ນ Fries Large = Fries 0.15 ກກ + PAPER BOWL LARGE 1 ໜ່ວຍ. ໃສ່ສູດແລ້ວ ລະບົບຈະຄຳນວນ "ການໃຊ້ຕາມທິດສະດີ" ປຽບທຽບກັບການໃຊ້ຈິງຈາກການນັບສະຕັອກ ໃນແຖບ "ວິເຄາະຕົ້ນທຶນ".</p>
+    <div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ເມນູ POS</th><th>ຂາຍ (ຈຳນວນ)</th><th>ຍອດ (₭)</th><th>ກຸ່ມ</th><th>ແຖວຍອດຂາຍ</th><th>ສູດ</th></tr></thead><tbody>
+    ${names.sort((x,y)=>w.pos.items[y].a-w.pos.items[x].a).map(n=>{ const v=w.pos.items[n], pm=pmGet(n), e=encodeURIComponent(n); const rc=(pm.recipe||[]).map(r=>{ const it=itemById(r.id); return it?`${esc(it.name)} ${fq(r.q)}`:''; }).filter(Boolean).join(', ');
+      return `<tr><td>${esc(n)}</td><td class="num">${fn(v.q)}</td><td class="num">${fm(v.a)}</td>
+      <td><select data-pn="${e}" data-p="g"><option value="food" ${pm.g==='food'?'selected':''}>ອາຫານ</option><option value="bev" ${pm.g==='bev'?'selected':''}>ເຄື່ອງດື່ມ</option><option value="other" ${pm.g==='other'?'selected':''}>ອື່ນໆ</option></select></td>
+      <td><select data-pn="${e}" data-p="line">${lineOpts(pm.line)}</select></td>
+      <td style="white-space:normal;min-width:200px"><button class="btn sm" data-act="posRecipe" data-n="${e}">${rc?'ແກ້ສູດ':'+ ໃສ່ສູດ'}</button> <span class="muted" style="font-size:12.5px">${rc||'ຍັງບໍ່ມີສູດ'}</span></td></tr>`; }).join('')}
+    </tbody></table></div></div>` : (P?'':`<div class="card muted" style="text-align:center">ຍັງບໍ່ມີຂໍ້ມູນ POS ຂອງ ${esc(weekFull(w))}</div>`);
+  return `${lockBanner(w)}<div class="view-title"><div><h2>ນຳເຂົ້າຂໍ້ມູນ POS</h2><p>ດຶງຍອດຂາຍ ແລະ ເມນູທີ່ຂາຍຈາກເຄື່ອງ POS → ໃຊ້ຄຳນວນຕົ້ນທຶນ, ກຳໄລ/ຂາດທຶນ ແລະ ວິເຄາະສາເຫດຕົ້ນທຶນສູງ</p></div></div>${importCard}${tbl}`;
+}
+function posImportCard(){
+  const P=POSIMP, hd=P.rows[P.hdr]||[], m=P.map;
+  const opts=sel=>`<option value="-1" ${sel<0?'selected':''}>— ບໍ່ມີ —</option>`+hd.map((h,i)=>`<option value="${i}" ${sel===i?'selected':''}>${i+1}. ${esc(String(h).slice(0,30))}</option>`).join('');
+  const plan=posPlan(), ids=Object.keys(plan.by);
+  const prev=P.rows.slice(P.hdr+1,P.hdr+7).map(r=>{ const x=posRow(r,m); return x?`<tr><td>${x.iso||'—'}</td><td>${esc(x.name)}</td><td class="num">${fn(x.qty)}</td><td class="num">${fm(x.amt)}</td></tr>`:''; }).join('');
+  return `<div class="card" style="margin-bottom:14px"><h3>ຈັບຄູ່ຄໍລຳ — ${esc(P.file)}</h3>
+   <div class="row" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr))">
+    <div><label class="f">ແຖວຫົວຕາຕະລາງ</label><input type="number" min="1" data-pi="hdr" value="${P.hdr+1}"></div>
+    <div><label class="f">ວັນທີ</label><select data-pi="date" style="width:100%">${opts(m.date)}</select></div>
+    <div><label class="f">ຊື່ເມນູ / ສິນຄ້າ</label><select data-pi="item" style="width:100%">${opts(m.item)}</select></div>
+    <div><label class="f">ຈຳນວນຂາຍ</label><select data-pi="qty" style="width:100%">${opts(m.qty)}</select></div>
+    <div><label class="f">ຍອດເງິນ (₭)</label><select data-pi="amt" style="width:100%">${opts(m.amt)}</select></div>
+    <div><label class="f">ສ່ວນຫຼຸດ (ຖ້າມີ)</label><select data-pi="disc" style="width:100%">${opts(m.disc)}</select></div></div>
+   <label style="display:flex;gap:8px;align-items:center;margin-top:10px;cursor:pointer"><input type="checkbox" data-pi="upd" ${P.updateLines?'checked':''}> ອັບເດດ "ແຖວຍອດຂາຍຕາມສິນຄ້າ" (Fries, Chicken...) ຈາກ POS ດ້ວຍ</label>
+   ${m.date<0?'<p class="hint" style="color:var(--warn)">ບໍ່ມີຄໍລຳວັນທີ → ຈະນຳເຂົ້າເປັນຍອດລວມຂອງອາທິດທີ່ກຳລັງເລືອກ (ບໍ່ມີຍອດຂາຍປະຈຳວັນ)</p>':''}
+   <div class="sp"></div><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ວັນທີ (ອ່ານໄດ້)</th><th>ເມນູ</th><th>ຈຳນວນ</th><th>ຍອດ</th></tr></thead><tbody>${prev||'<tr><td colspan="4" class="muted">ຍັງບໍ່ໄດ້ເລືອກຄໍລຳ</td></tr>'}</tbody></table></div>
+   <p style="margin:10px 0 0">ອ່ານໄດ້ <b>${plan.used}</b> ແຖວ · ຍອດລວມ <b>${fm(plan.total)} ₭</b>${plan.min?` · ວັນທີ ${plan.min} ຫາ ${plan.max}`:''} · ກົງ ${ids.length} ອາທິດ${plan.skipped?` · <span class="neg">ຂ້າມ ${plan.skipped} ແຖວ (ວັນທີອ່ານບໍ່ໄດ້ ຫຼື ບໍ່ມີອາທິດຄອບຄຸມ)</span>`:''}</p>
+   <div class="mfoot" style="justify-content:flex-start"><button class="btn primary" data-act="posApply">ນຳເຂົ້າ</button><button class="btn" data-act="posCancel">ຍົກເລີກ</button></div></div>`;
+}
+function recipeRow(r){
+  return `<div class="row" data-rcrow style="grid-template-columns:1fr 100px 36px;gap:8px;margin-bottom:8px"><select data-rci><option value="">— ເລືອກວັດຖຸດິບ —</option>${itemOptions(r.id)}</select><input type="text" inputmode="decimal" data-rcq value="${r.q!==''&&r.q!=null?fq(r.q):''}" placeholder="ຈຳນວນ"><button class="btn sm danger" data-act="rcDel">×</button></div>`;
+}
+function openRecipe(name){
+  const pm=pmGet(name);
+  openModal(`<h3>ສູດ: ${esc(name)}</h3><p class="hint">ຂາຍ 1 ໜ່ວຍ ໃຊ້ວັດຖຸດິບຈາກສະຕັອກເທົ່າໃດ (ໃຊ້ໜ່ວຍດຽວກັບການນັບສະຕັອກ ເຊັ່ນ ກກ, ໜ່ວຍ, ກະປອງ)</p><input type="hidden" id="rcName" value="${esc(encodeURIComponent(name))}">
+   <div id="rcRows">${(pm.recipe&&pm.recipe.length?pm.recipe:[{id:'',q:''}]).map(recipeRow).join('')}</div><button class="btn sm" data-act="rcAdd">+ ເພີ່ມວັດຖຸດິບ</button>
+   <div class="mfoot"><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="rcSave">ບັນທຶກສູດ</button></div>`);
+}
+function saveRecipe(){
+  const name=decodeURIComponent($('#rcName').value); const rc=[];
+  $$('[data-rcrow]').forEach(r=>{ const id=$('[data-rci]',r).value, q=parseExpr($('[data-rcq]',r).value); if(id&&q>0) rc.push({id,q}); });
+  pmSet(name).recipe=rc; save(); closeModal(); render(); toast('ບັນທຶກສູດແລ້ວ');
+}
+
+/* ============ ວິເຄາະຕົ້ນທຶນ ============ */
+function analyze(w){
+  const S=wsum(w), SL=salesOf(w), net=SL.net, limit=n0(state.settings.costLimit)||0.35, tol=n0(state.settings.varTol)||0.05;
+  const prev=prevWeek(w), Sp=prev?wsum(prev):null, SLp=prev?salesOf(prev):null;
+  const items=activeItems(w).map(it=>({it,c:calc(w,it.id),pc:prev?calc(prev,it.id):null}));
+  const cost=S.cost, pct=net>0?cost/net:null, excess=net>0?Math.max(0,cost-limit*net):0;
+  const labour=n0(w.labour&&w.labour.cost), profit=net-cost-labour;
+  const waste=state.waste.filter(x=>x.date>=w.start&&x.date<=wEnd(w)).reduce((s,x)=>s+wasteVal(x),0);
+  let priceEff=0; const priceList=[];
+  items.forEach(({it,c,pc})=>{ if(pc&&c.usage>0&&Math.abs(c.price-pc.price)>1e-9){ const e=c.usage*(c.price-pc.price); priceEff+=e; priceList.push({it,e,from:pc.price,to:c.price}); } });
+  const unc=items.filter(x=>!x.c.counted), uncVal=unc.reduce((s,x)=>s+Math.max(0,x.c.total)*x.c.price,0);
+  const neg=items.filter(x=>x.c.usage!=null&&x.c.usage<-1e-9), negVal=neg.reduce((s,x)=>s-x.c.cost,0);
+  const carried=prev?items.filter(x=>x.c.carried&&w.rows[x.it.id]&&w.rows[x.it.id].begin==null&&prev.rows[x.it.id]&&prev.rows[x.it.id].end==null&&calc(prev,x.it.id).total>0).length:0;
+  const theo=theoUsage(w), hasPOS=!!(w.pos&&Object.keys(w.pos.items).length), cover=posCoverage(w);
+  const varRows=[]; Object.keys(theo).forEach(id=>{ const c=calc(w,id); if(!c.counted) return; const it=itemById(id); const th=theo[id], diff=c.usage-th; varRows.push({it,th,act:c.usage,diff,val:diff*c.price,pct:th>0?diff/th:null}); });
+  varRows.sort((x,y)=>y.val-x.val);
+  const overRows=varRows.filter(r=>r.val>0&&(r.pct==null||r.pct>tol)); const overVal=overRows.reduce((s,r)=>s+r.val,0);
+  const noRecipe=hasPOS?items.filter(x=>x.c.usage>0&&!(x.it.id in theo)&&(x.it.cat==='food'||x.it.cat==='season'||x.it.cat==='bev')).sort((x,y)=>y.c.cost-x.c.cost):[];
+  const reasons=[];
+  const add=(side,title,amt,desc)=>{ if(amt>0.5) reasons.push({side,title,amt,pts:net>0?amt/net:null,desc}); };
+  if(hasPOS&&cover>0) add('stock',`ໃຊ້ວັດຖຸດິບເກີນສູດ (${overRows.length} ລາຍການ)`,overVal,'ການໃຊ້ຈິງຈາກການນັບ ສູງກວ່າທີ່ຄວນໃຊ້ຕາມຍອດຂາຍ POS — ມັກມາຈາກ: ຊັ່ງ/ໃສ່ເກີນ, ແຈກ/ກິນພະນັກງານ, ເຮັດຖິ້ມ, ຂອງເສຍບໍ່ໄດ້ບັນທຶກ, ຂາຍບໍ່ຜ່ານ POS ຫຼື ນັບສະຕັອກຜິດ');
+  add('stock','ຂອງເສຍທີ່ບັນທຶກໄວ້',waste,'ມູນຄ່າຂອງເສຍໃນແຖບ "ຂອງເສຍ" (ລວມຢູ່ໃນຕົ້ນທຶນແລ້ວ)');
+  add('stock','ລາຄາວັດຖຸດິບເພີ່ມຂຶ້ນຈາກອາທິດກ່ອນ',priceEff,priceList.sort((x,y)=>y.e-x.e).slice(0,3).map(p=>`${p.it.name} ${fm(p.from)}→${fm(p.to)}`).join(', '));
+  if(net>0&&SL.gross>0&&SL.disc/SL.gross>0.05) add('pos','ສ່ວນຫຼຸດ / ໂປຣໂມຊັນສູງ',cost/net*net-cost/SL.gross*net,`ສ່ວນຫຼຸດ ${fp(SL.disc/SL.gross)} ຂອງຍອດຂາຍລວມ ເຮັດໃຫ້ % ຕົ້ນທຶນສູງຂຶ້ນ`);
+  const tg=n0(w.target); if(tg>0&&net>0&&net<tg) add('pos','ຍອດຂາຍຕ່ຳກວ່າເປົ້າໝາຍ',cost-cost/tg*net,`ຖ້າຂາຍໄດ້ຕາມເປົ້າ ${fm(tg)} ₭ % ຕົ້ນທຶນຈະເປັນ ${fp(cost/tg)}`);
+  reasons.sort((x,y)=>y.amt-x.amt);
+  const dq=[]; if(neg.length) dq.push(`${neg.length} ລາຍການນັບໄດ້ຫຼາຍກວ່າຍອດຄາດ (ໃຊ້ຕິດລົບ ${fm(negVal)} ₭): ${neg.slice(0,4).map(x=>x.it.name).join(', ')} — ອາດລືມບັນທຶກຮັບເຂົ້າ ຫຼື ນັບຜິດ`);
+  if(carried) dq.push(`${carried} ລາຍການ ຍອດຍົກມາດຶງຈາກອາທິດກ່ອນທີ່ບໍ່ໄດ້ນັບທ້າຍອາທິດ — ການໃຊ້ອາດຄາດເຄື່ອນ`);
+  if(unc.length) dq.unshift(`ຍັງບໍ່ໄດ້ນັບ ${unc.length} ລາຍການ (ມູນຄ່າຄາດເຫຼືອ ${fm(uncVal)} ₭) — ຕົ້ນທຶນທີ່ສະແດງອາດຕ່ຳກວ່າຄວາມຈິງ ຈົນກວ່າຈະນັບຄົບ`);
+  if(hasPOS&&cover<0.8) dq.push(`ສູດຄອບຄຸມພຽງ ${fp(cover)} ຂອງຍອດຂາຍ POS — ເພີ່ມສູດໃຫ້ຄົບເພື່ອໃຫ້ການວິເຄາະແມ່ນຍຳ`);
+  if(!hasPOS) dq.push('ຍັງບໍ່ມີຂໍ້ມູນ POS ຂອງອາທິດນີ້ — ແຍກບໍ່ໄດ້ວ່າຕົ້ນທຶນສູງມາຈາກການໃຊ້ເກີນ ຫຼື ການນັບຜິດ (ໄປແຖບ "ນຳເຂົ້າ POS")');
+  if(noRecipe.length) dq.push(`ວັດຖຸດິບທີ່ມີການໃຊ້ແຕ່ບໍ່ມີໃນສູດໃດ: ${noRecipe.slice(0,4).map(x=>x.it.name+' ('+fm(x.c.cost)+')').join(', ')}`);
+  const topItems=items.filter(x=>x.c.cost>0).sort((x,y)=>y.c.cost-x.c.cost).slice(0,10);
+  return {S,SL,net,limit,tol,cost,pct,excess,labour,profit,prev,Sp,SLp,items,waste,priceEff,uncVal,unc,neg,negVal,theo,hasPOS,cover,varRows,overRows,overVal,noRecipe,reasons,dq,topItems};
+}
+function V_analysis(){
+  const w=curWeek(); if(!w) return noWeek();
+  const A=analyze(w), over=A.pct!=null&&A.pct>A.limit;
+  const sideName={pos:'ດ້ານຂາຍ/POS',stock:'ດ້ານສະຕັອກ/ການໃຊ້',data:'ຄຸນນະພາບຂໍ້ມູນ'};
+  const pctp=A.Sp&&A.SLp&&A.SLp.net>0?A.Sp.cost/A.SLp.net:null;
+  let verdict;
+  if(!(A.net>0)) verdict=`<div class="banner warn"><span>ຍັງບໍ່ມີຍອດຂາຍຂອງອາທິດນີ້ — ປ້ອນຍອດຂາຍ ຫຼື ນຳເຂົ້າ POS ກ່ອນ ຈຶ່ງວິເຄາະໄດ້</span><button class="btn sm" data-act="tab" data-v="pos">ນຳເຂົ້າ POS</button></div>`;
+  else if(!over) verdict=`<div class="banner info"><span><b>ຕົ້ນທຶນ ${fp(A.pct)} ຢູ່ໃນເກນ ${fp(A.limit)}</b> ${A.S.todo.length?`— ແຕ່ຍັງມີ ${A.S.todo.length} ລາຍການທີ່ບໍ່ໄດ້ນັບ ຕົວເລກອາດຕ່ຳກວ່າຄວາມຈິງ`:''}</span></div>`;
+  else { const top=A.reasons.slice(0,3).map(r=>`${r.title} (${fm(r.amt)} ₭ ≈ ${fp(r.pts)} ຂອງຍອດຂາຍ)`).join('; ');
+    verdict=`<div class="banner bad"><span><b>ຕົ້ນທຶນ ${fp(A.pct)} ສູງກວ່າເກນ ${fp(A.limit)}</b> ເກີນ ${fm(A.excess)} ₭. ${A.reasons.length?'ສາເຫດຫຼັກທີ່ພົບ: '+top+'.':'ຍັງບໍ່ພົບສາເຫດຊັດເຈນຈາກຂໍ້ມູນທີ່ມີ.'} ${A.hasPOS&&A.cover>0?'(ວິເຄາະຈາກ POS + ສູດ + ການນັບສະຕັອກ)':'(ວິເຄາະຈາກການນັບສະຕັອກເທົ່ານັ້ນ — ຍັງບໍ່ມີ POS/ສູດ)'}</span></div>`; }
+  const catRows=CATS.map(c=>{ const cur=A.S.by[c.id].cost, pv=A.Sp?A.Sp.by[c.id].cost:null; const pp=A.net>0?cur/A.net:null, ppp=(pv!=null&&A.SLp&&A.SLp.net>0)?pv/A.SLp.net:null;
+    return `<tr><td>${c.name}</td><td class="num">${fm(cur)}</td><td class="num">${fp(pp)}</td><td class="num">${ppp!=null?fp(ppp):'—'}</td><td class="num ${pp!=null&&ppp!=null&&pp>ppp?'neg':''}">${pp!=null&&ppp!=null?((pp-ppp)*100>=0?'+':'')+((pp-ppp)*100).toFixed(1)+' pp':'—'}</td></tr>`; }).join('');
+  const trend=sortedWeeks().slice(-8).map(x=>{ const s=wsum(x), sl=salesOf(x), p=sl.net>0?s.cost/sl.net:null; return `<tr><td>${esc(weekFull(x))}</td><td class="num">${fm(sl.net)}</td><td class="num">${fm(s.cost)}</td><td class="num ${p!=null&&p>A.limit?'neg':''}">${fp(p)}</td><td>${s.todo.length?'<span class="chip warn">ຍັງບໍ່ນັບຄົບ</span>':''}</td></tr>`; }).join('');
+  return `<div class="view-title"><div><h2>ວິເຄາະຕົ້ນທຶນ & ກຳໄລ/ຂາດທຶນ</h2><p>${esc(weekFull(w))} — ຕົ້ນທຶນສູງມາຈາກ POS (ການຂາຍ) ຫຼື ການນັບສະຕັອກ/ການໃຊ້ຈິງ?</p></div>
+   <div class="actions"><label class="f" style="margin:0">ເກນຕົ້ນທຶນ %</label><input type="number" min="1" max="99" step="0.5" style="width:90px" data-f="costLimit" value="${+(A.limit*100).toFixed(1)}"><label class="f" style="margin:0">ຍອມຮັບໃຊ້ເກີນສູດ %</label><input type="number" min="0" max="50" step="1" style="width:80px" data-f="varTol" value="${+(A.tol*100).toFixed(1)}"></div></div>
+  ${verdict}
+  <div class="grid kpis">
+   <div class="card kpi"><div class="lbl">ຍອດຂາຍສຸດທິ</div><div class="val">${fm(A.net)} ₭</div><div class="sub">${A.SL.usingDaily?'ຈາກຍອດປະຈຳວັນ':(w.pos?'ຈາກ POS':'ປ້ອນເອງ')}</div></div>
+   <div class="card kpi"><div class="lbl">ຕົ້ນທຶນທີ່ໃຊ້ໄປ</div><div class="val">${fm(A.cost)} ₭</div><div class="sub">${A.S.todo.length?'ຍັງບໍ່ນັບ '+A.S.todo.length+' ລາຍການ':'ນັບຄົບ'}</div></div>
+   <div class="card kpi"><div class="lbl">% ຕົ້ນທຶນ (ເກນ ${fp(A.limit)})</div><div class="val" style="color:${over?'var(--bad)':'var(--ok)'}">${fp(A.pct)}</div><div class="sub">ອາທິດກ່ອນ ${fp(pctp)}${over?` · ເກີນ ${fm(A.excess)} ₭`:''}</div></div>
+   <div class="card kpi"><div class="lbl">${A.profit>=0?'ກຳໄລ':'ຂາດທຶນ'} (ຂາຍ − ຕົ້ນທຶນ${A.labour?' − ແຮງງານ':''})</div><div class="val" style="color:${A.profit>=0?'var(--ok)':'var(--bad)'}">${fm(A.profit)} ₭</div><div class="sub">${A.net>0?fp(A.profit/A.net)+' ຂອງຍອດຂາຍ':''}</div></div></div>
+  <div class="sp"></div>
+  <div class="card"><h3>ສາເຫດທີ່ເຮັດໃຫ້ຕົ້ນທຶນສູງ (ຄາດຄະເນຈາກຂໍ້ມູນ — ຈັດລຽງຕາມຜົນກະທົບ)</h3>
+   <div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ແຫຼ່ງ</th><th>ສາເຫດ</th><th>ຜົນກະທົບ (₭)</th><th>≈ % ຂອງຍອດຂາຍ</th><th>ລາຍລະອຽດ</th></tr></thead><tbody>
+   ${A.reasons.map(r=>`<tr><td><span class="chip ${r.side==='pos'?'warn':r.side==='stock'?'bad':''}">${sideName[r.side]}</span></td><td style="white-space:normal;min-width:200px">${esc(r.title)}</td><td class="num">${fm(r.amt)}</td><td class="num">${fp(r.pts)}</td><td style="white-space:normal;min-width:260px;font-size:12.5px" class="muted">${esc(r.desc)}</td></tr>`).join('')||'<tr><td colspan="5" class="muted" style="text-align:center;padding:16px">ບໍ່ພົບສາເຫດທີ່ຕ້ອງລາຍງານ</td></tr>'}
+   </tbody></table></div>
+   ${A.dq.length?`<div class="sp"></div><h3>ຂໍ້ສັງເກດຄຸນນະພາບຂໍ້ມູນ</h3><ul style="margin:0;padding-left:20px;display:grid;gap:4px">${A.dq.map(d=>`<li>${esc(d)}</li>`).join('')}</ul>`:''}
+   <p class="hint" style="margin-top:10px">ຜົນກະທົບແຕ່ລະອັນເປັນການຄາດຄະເນແຍກກັນ (ອາດຊ້ອນກັນ) ບໍ່ແມ່ນຜົນລວມທີ່ບວກກັນໄດ້ພໍດີກັບສ່ວນເກີນ.</p></div>
+  <div class="sp"></div>
+  ${A.hasPOS?`<div class="card"><h3>ການໃຊ້ຈິງ (ນັບສະຕັອກ) ປຽບທຽບກັບທິດສະດີ (POS × ສູດ)</h3>
+   ${A.varRows.length?`<div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ວັດຖຸດິບ</th><th>ຄວນໃຊ້ (ຕາມ POS)</th><th>ໃຊ້ຈິງ (ນັບ)</th><th>ຜິດແຜກ</th><th>ຜິດແຜກ (₭)</th><th>%</th></tr></thead><tbody>
+   ${A.varRows.slice(0,20).map(r=>{ const bad=r.val>0&&(r.pct==null||r.pct>A.tol); return `<tr><td>${esc(r.it.name)} <span class="muted">(${esc(r.it.unit)})</span></td><td class="num">${fn(r.th)}</td><td class="num">${fn(r.act)}</td><td class="num ${bad?'neg':''}">${r.diff>0?'+':''}${fn(r.diff)}</td><td class="num ${bad?'neg':''}">${r.val>0?'+':''}${fm(r.val)}</td><td class="num">${r.pct!=null?fp(r.pct):'—'}</td></tr>`; }).join('')}</tbody></table></div><p class="hint">ສີແດງ = ໃຊ້ຈິງເກີນສູດຫຼາຍກວ່າ ${fp(A.tol)}. ເຄື່ອງໝາຍລົບ = ໃຊ້ໜ້ອຍກວ່າສູດ (ອາດຊັ່ງໜ້ອຍ ຫຼື ສູດສູງເກີນ ຫຼື ນັບຜິດ).</p>`:`<p class="muted">${Object.keys(A.theo).length?'ວັດຖຸດິບທີ່ມີສູດຍັງບໍ່ໄດ້ນັບສະຕັອກ — ນັບໃຫ້ຄົບກ່ອນ ຈຶ່ງປຽບທຽບໄດ້':'ຍັງບໍ່ມີສູດ — ກົດແຖບ "ນຳເຂົ້າ POS" ແລ້ວໃສ່ສູດຂອງແຕ່ລະເມນູ ເພື່ອໃຫ້ລະບົບປຽບທຽບໄດ້'}</p>`}</div><div class="sp"></div>`:''}
+  <div class="grid two">
+   <div class="card"><h3>ຕົ້ນທຶນຕາມໝວດ (ປຽບທຽບອາທິດກ່ອນ)</h3><table class="plain"><thead><tr><th>ໝວດ</th><th>ຕົ້ນທຶນ</th><th>% ຂາຍ</th><th>ອາທິດກ່ອນ</th><th>ປ່ຽນ</th></tr></thead><tbody>${catRows}</tbody></table></div>
+   <div class="card"><h3>10 ລາຍການຕົ້ນທຶນສູງສຸດ</h3><table class="plain"><thead><tr><th>ລາຍການ</th><th>ໃຊ້ໄປ</th><th>ມູນຄ່າ</th><th>% ຂອງຕົ້ນທຶນ</th></tr></thead><tbody>${A.topItems.map(x=>`<tr><td>${esc(x.it.name)}</td><td class="num">${fn(x.c.usage)} ${esc(x.it.unit.split(/[\s*]/)[0])}</td><td class="num">${fm(x.c.cost)}</td><td class="num">${fp(A.cost>0?x.c.cost/A.cost:null)}</td></tr>`).join('')}</tbody></table></div></div>
+  <div class="sp"></div>
+  <div class="card"><h3>ແນວໂນ້ມ % ຕົ້ນທຶນ ຕາມອາທິດ</h3><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ອາທິດ</th><th>ຍອດຂາຍສຸດທິ</th><th>ຕົ້ນທຶນ</th><th>% ຕົ້ນທຶນ</th><th></th></tr></thead><tbody>${trend}</tbody></table></div></div>`;
+}
+
 /* ============ ເລີ່ມຕົ້ນ ============ */
-state = load(); ui = loadUI();
+ROOT = load(); state = activeBranch().data; ui = loadUI();
 $('#themeBtn').addEventListener('click',()=>{ const cur=document.documentElement.dataset.theme; const dark=cur?cur==='dark':matchMedia('(prefers-color-scheme:dark)').matches; document.documentElement.dataset.theme=dark?'light':'dark'; try{localStorage.setItem('pc_theme',dark?'light':'dark')}catch(e){} });
 try{ const th=localStorage.getItem('pc_theme'); if(th) document.documentElement.dataset.theme=th; }catch(e){}
 if(!storageOK) setSaveInd('ບຣາວເຊີບໍ່ອະນຸຍາດບັນທຶກ — ໃຫ້ດາວໂຫຼດສຳຮອງເປັນປະຈຳ', true);
