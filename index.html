@@ -206,6 +206,22 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
 .bsel{max-width:100%;min-height:30px;padding:2px 8px;font-size:13px;margin-top:2px;color:var(--muted);font-weight:600}
 .bsel{display:block}
 
+@media print{
+  #printArea .pv{font-weight:500}
+  #printArea .card{border:1px solid #999;border-radius:0;box-shadow:none;padding:6px;margin:0 0 8px;background:#fff;break-inside:avoid}
+  #printArea .grid{display:block}
+  #printArea .grid.kpis{display:flex;flex-wrap:wrap;gap:6px}
+  #printArea .grid.kpis .card{flex:1 1 22%}
+  #printArea .tbl-wrap{overflow:visible!important;max-height:none!important}
+  #printArea table{font-size:11px}
+  #printArea .pv-wide table{font-size:8.5px}
+  #printArea .pv-wide th,#printArea .pv-wide td{padding:2px 3px}
+  #printArea thead{display:table-header-group}
+  #printArea tr{break-inside:avoid}
+  #printArea .num{text-align:right}
+  #printArea .sheet th,#printArea .sheet td{position:static!important}
+}
+
 </style>
 </head>
 <body>
@@ -218,6 +234,7 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
     <div class="weekbar">
       <select id="weekSel" aria-label="ເລືອກອາທິດ"></select>
       <button class="btn" data-act="newWeek">+ ອາທິດໃໝ່</button>
+      <button class="btn ghost" data-act="printPage" title="ພິມໜ້ານີ້" aria-label="ພິມໜ້ານີ້">🖨</button>
       <button class="btn ghost" id="themeBtn" title="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ" aria-label="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ">◐</button>
     </div>
     <span class="save-ind" id="saveInd"></span>
@@ -249,7 +266,7 @@ const MS = ['ມ.ກ.','ກ.ພ.','ມ.ນ.','ມ.ສ.','ພ.ພ.','ມິ.ຖ.'
 const ML = ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
 const REASONS = ['ໝົດອາຍຸ','ເສຍຫາຍ / ເປື້ອນ','ເຮັດຜິດ / ເຮັດຖິ້ມ','ຕົກຫຼົ່ນ / ຫົກ','ອາຫານບໍ່ໄດ້ມາດຕະຖານ','ອື່ນໆ'];
 const TABS = [
-  ['overview','ພາບລວມ'],['branches','ທຸກສາຂາ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],['pos','ນຳເຂົ້າ POS'],['analysis','ວິເຄາະຕົ້ນທຶນ'],
+  ['overview','ພາບລວມ'],['branches','ທຸກສາຂາ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['flow','ເຄື່ອນໄຫວ 5 ອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],['pos','ນຳເຂົ້າ POS'],['analysis','ວິເຄາະຕົ້ນທຶນ'],
   ['month','ສະຫຼຸບເດືອນ'],['waste','ຂອງເສຍ'],['order','ແນະນຳສັ່ງຊື້'],['po','ໃບສັ່ງຊື້'],['items','ລາຍການສິນຄ້າ'],['settings','ຕັ້ງຄ່າ / ສຳຮອງ']
 ];
 
@@ -339,7 +356,7 @@ function withBranch(id,fn){
 function loadXLSX(){ return new Promise((res,rej)=>{ if(window.XLSX) return res(); const s=document.createElement('script'); s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'; s.onload=()=>res(); s.onerror=()=>rej(); document.head.appendChild(s); }); }
 function setActive(id){
   ROOT.active=id; state=activeBranch().data; touch();
-  ui.wid=null; ui.poId=null; POSIMP=null; ui.month=null; ui.wmonth=null; ui.cat='all'; ui.q=''; ui.todo=false;
+  ui.wid=null; ui.fwk=null; ui.poId=null; POSIMP=null; ui.month=null; ui.wmonth=null; ui.cat='all'; ui.q=''; ui.todo=false;
   saveUI(); save(); render();
 }
 function replaceActive(d){ d.settings.branch=state.settings.branch; d.settings.staff=state.settings.staff; activeBranch().data=d; state=d; touch(); }
@@ -498,7 +515,7 @@ function renderChrome(){
 function render(){
   renderChrome();
   const v=$('#view');
-  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,pos:V_pos,analysis:V_analysis,branches:V_branches,items:V_items,settings:V_settings}[ui.tab]||V_overview;
+  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,flow:V_flow,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,pos:V_pos,analysis:V_analysis,branches:V_branches,items:V_items,settings:V_settings}[ui.tab]||V_overview;
   v.innerHTML = remindHTML() + fn_();
   refreshCalc();
   const hdr=$('.top'); if(hdr) document.documentElement.style.setProperty('--hdr',(hdr.offsetHeight-1)+'px');
@@ -631,7 +648,7 @@ function V_sheet(){
   }).join('');
   return `${lockBanner(w)}
   <div class="view-title"><div><h2>ຕາຕະລາງອາທິດ</h2><p>${esc(weekFull(w))} · ແທນຊີດ inventory ໃນ Excel. ຊ່ອງສີເທົາ-ໂຕເອນ = ດຶງຈາກຍອດນັບທ້າຍອາທິດກ່ອນອັດຕະໂນມັດ (ພິມທັບໄດ້)</p></div>
-   <div class="actions"><button class="btn" data-act="receive" ${dis}>+ ບັນທຶກຮັບເຂົ້າ</button><button class="btn" data-act="exportWeek">ດາວໂຫຼດ CSV</button>${w.locked?'':'<button class="btn" data-act="lock">ລັອກອາທິດ</button>'}<button class="btn danger" data-act="delWeek">ລຶບອາທິດ</button></div></div>
+   <div class="actions"><button class="btn" data-act="receive" ${dis}>+ ບັນທຶກຮັບເຂົ້າ</button><button class="btn" data-act="exportWeek">ດາວໂຫຼດ CSV</button><button class="btn" data-act="exportXLSX">ດາວໂຫຼດ Excel (ມີສູດ)</button>${w.locked?'':'<button class="btn" data-act="lock">ລັອກອາທິດ</button>'}<button class="btn danger" data-act="delWeek">ລຶບອາທິດ</button></div></div>
   <div class="tbl-wrap"><table class="sheet">${head}<tbody>${body}</tbody></table></div>
   <p class="hint">ໂອນເຂົ້າ/ໂອນອອກ = T/F In / T/F Out ໃນ Excel. ແກ້ລາຄາໃນຕາຕະລາງຈະບັນທຶກເປັນລາຄາຂອງອາທິດນີ້ ແລະ ເປັນລາຄາຫຼ້າສຸດສຳລັບອາທິດໃໝ່.</p>`;
 }
@@ -857,7 +874,7 @@ function V_settings(){
     <label class="f">ຜູ້ນັບຂອງອາທິດທີ່ເລືອກ</label><input type="text" data-f="weekBy" value="${esc((curWeek()||{}).by||'')}"></div>
    <div class="card"><h3>ສຳຮອງ / ກູ້ຄືນຂໍ້ມູນ</h3><div class="actions"><button class="btn primary" data-act="backup">ດາວໂຫຼດໄຟລ໌ສຳຮອງ (.json)</button><button class="btn" data-act="restore">ກູ້ຄືນຈາກໄຟລ໌</button><input type="file" id="restoreFile" accept=".json,application/json" class="hide"></div>
     <p class="hint">ໄຟລ໌ສຳຮອງໃຊ້ຍ້າຍຂໍ້ມູນໄປເຄື່ອງອື່ນ ຫຼື ກູ້ຄືນຖ້າບຣາວເຊີຖືກລ້າງ.</p><div class="sp"></div>
-    <div class="actions"><button class="btn" data-act="exportAll">ດາວໂຫຼດທຸກອາທິດ (CSV)</button></div></div>
+    <div class="actions"><button class="btn primary" data-act="exportXLSX">ດາວໂຫຼດ Excel (ມີສູດ)</button><button class="btn" data-act="exportAll">ດາວໂຫຼດທຸກອາທິດ (CSV)</button></div></div>
    <div class="card"><h3>ແຈ້ງເຕືອນນັບສະຕັອກທຸກວັນຈັນ</h3>
     <label style="display:flex;gap:8px;align-items:center;cursor:pointer;margin-bottom:10px"><input type="checkbox" data-f="remindOn" ${ROOT.remind.on?'checked':''}> ເປີດການແຈ້ງເຕືອນ (ແບນເນີໃນເວັບ ທຸກຄັ້ງທີ່ເປີດ ໃນວັນຈັນ)</label>
     <label class="f">ເວລາແຈ້ງເຕືອນ</label><input type="time" data-f="remindTime" value="${esc(ROOT.remind.time||'08:00')}" style="max-width:160px">
@@ -985,7 +1002,7 @@ function onField(t){
   if(f==='poOnly'){ ui.poOnly=t.checked; saveUI(); render(); return; }
   if(f==='onlyLow'){ ui.onlyLow=t.checked; saveUI(); render(); return; }
   if(f==='target'){ ui.target=Math.max(1,Math.min(90,+t.value||14)); saveUI(); render(); return; }
-  if(f==='month'){ ui.month=t.value; saveUI(); render(); return; }
+  if(f==='month'){ ui.month=t.value; ui.fwk=0; saveUI(); render(); return; }
   if(f==='wmonth'){ ui.wmonth=t.value; saveUI(); render(); return; }
 }
 function lockWeek(on){ const w=curWeek(); if(!w) return; w.locked=on; save(); render(); toast(on?'ລັອກອາທິດແລ້ວ':'ປົດລັອກແລ້ວ'); }
@@ -1062,6 +1079,9 @@ document.addEventListener('click', e=>{
     case 'receive': openReceive(); break;
     case 'saveReceive': saveReceive(); break;
     case 'printCount': printCount(); break;
+    case 'printPage': printPage(); break;
+    case 'fwk': { const v=b.dataset.v; ui.fwk=v==='all'?'all':+v; if(v!=='all'){ const A=monthAgg(ui.month); const wk=A&&A.W[+v]; if(wk) ui.wid=wk.id; } render(); break; }
+    case 'exportXLSX': exportXLSX(); break;
     case 'finishCount': {
       const S=wsum(w);
       if(S.todo.length){ confirmBox('ຍັງມີລາຍການທີ່ບໍ່ໄດ້ນັບ',`ຍັງເຫຼືອ ${S.todo.length} ລາຍການ (${S.todo.slice(0,5).map(i=>esc(i.name)).join(', ')}${S.todo.length>5?'...':''}). ຕ້ອງການເບິ່ງສະເພາະລາຍການທີ່ຍັງບໍ່ໄດ້ນັບບໍ?`,()=>{ui.todo=true;saveUI();render();},'ເບິ່ງລາຍການທີ່ຍັງເຫຼືອ'); }
@@ -1128,7 +1148,7 @@ document.addEventListener('click', e=>{
 document.addEventListener('change', e=>{
   const t=e.target;
   if(t.id==='branchSel'){ setActive(t.value); return; }
-  if(t.id==='weekSel'){ ui.wid=t.value; saveUI(); render(); return; }
+  if(t.id==='weekSel'){ ui.wid=t.value; ui.fwk=null; saveUI(); render(); return; }
   if(t.matches('input.cell[data-k]')){ onCell(t); return; }
   if(t.id==='posFile' && t.files[0]){
     const f=t.files[0];
@@ -1669,6 +1689,170 @@ function V_analysis(){
    <div class="card"><h3>10 ລາຍການຕົ້ນທຶນສູງສຸດ</h3><table class="plain"><thead><tr><th>ລາຍການ</th><th>ໃຊ້ໄປ</th><th>ມູນຄ່າ</th><th>% ຂອງຕົ້ນທຶນ</th></tr></thead><tbody>${A.topItems.map(x=>`<tr><td>${esc(x.it.name)}</td><td class="num">${fn(x.c.usage)} ${esc(x.it.unit.split(/[\s*]/)[0])}</td><td class="num">${fm(x.c.cost)}</td><td class="num">${fp(A.cost>0?x.c.cost/A.cost:null)}</td></tr>`).join('')}</tbody></table></div></div>
   <div class="sp"></div>
   <div class="card"><h3>ແນວໂນ້ມ % ຕົ້ນທຶນ ຕາມອາທິດ</h3><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ອາທິດ</th><th>ຍອດຂາຍສຸດທິ</th><th>ຕົ້ນທຶນ</th><th>% ຕົ້ນທຶນ</th><th></th></tr></thead><tbody>${trend}</tbody></table></div></div>`;
+}
+
+
+/* ============ ພິມໜ້ານີ້ ============ */
+function printPage(){
+  const v=$('#view'); const c=v.cloneNode(true);
+  const o=[...v.querySelectorAll('input,select,textarea')], k=[...c.querySelectorAll('input,select,textarea')];
+  k.forEach((el,i)=>{ const s=o[i]; if(!s) return; let t='';
+    if(s.type==='hidden'||s.type==='file'||s.type==='button') t=''; else if(s.type==='checkbox'||s.type==='radio') t=s.checked?'☑':'☐';
+    else if(s.tagName==='SELECT') t=(s.options[s.selectedIndex]||{}).text||''; else t=s.value;
+    const sp=document.createElement('span'); sp.textContent=t; sp.className='pv'; el.replaceWith(sp); });
+  c.querySelectorAll('button,.actions,.banner,.remind,.tabs,[data-act],.hint.noprint,.noprint').forEach(e=>{ if(!e.closest('table')||e.tagName==='BUTTON') e.remove(); });
+  c.querySelectorAll('.view-title').forEach(e=>e.remove());
+  const tab=(TABS.find(t=>t[0]===ui.tab)||[])[1]||''; const w=curWeek();
+  const wide=!!c.querySelector('table.sheet')||c.querySelectorAll('th').length>9;
+  let st=$('#pageStyle'); if(!st){ st=document.createElement('style'); st.id='pageStyle'; document.head.appendChild(st); }
+  st.textContent=`@page{size:A4 ${wide?'landscape':'portrait'};margin:10mm}`;
+  $('#printArea').innerHTML=`<h2>${esc(state.settings.branch)} — ${esc(tab)}</h2><div style="margin-bottom:8px">${w&&!['branches','items','settings','waste','po'].includes(ui.tab)&&!(ui.tab==='flow'&&ui.fwk==='all')?esc(weekFull(w))+' &nbsp;·&nbsp; ':''}ພິມເມື່ອ ${toISO(new Date())} ${new Date().toTimeString().slice(0,5)}</div><div class="pv-body ${wide?'pv-wide':''}">${c.innerHTML}</div>`;
+  window.print();
+}
+
+/* ============ ສົ່ງອອກ Excel ແບບມີສູດ (ບໍ່ຕ້ອງໃຊ້ອິນເຕີເນັດ) ============ */
+const crcT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0;}return t;})();
+const crc32=u=>{let c=0xFFFFFFFF;for(let i=0;i<u.length;i++)c=crcT[(c^u[i])&255]^(c>>>8);return (c^0xFFFFFFFF)>>>0;};
+function zipStore(files){
+  const enc=new TextEncoder(), parts=[], cen=[]; let off=0;
+  const u32=n=>[n&255,(n>>>8)&255,(n>>>16)&255,(n>>>24)&255], u16=n=>[n&255,(n>>>8)&255];
+  files.forEach(f=>{ const nm=enc.encode(f.name), d=enc.encode(f.data), crc=crc32(d);
+    const lh=new Uint8Array([0x50,0x4b,3,4,20,0,0,8,0,0,0,0,0x21,0,...u32(crc),...u32(d.length),...u32(d.length),...u16(nm.length),0,0]);
+    parts.push(lh,nm,d);
+    cen.push(new Uint8Array([0x50,0x4b,1,2,20,0,20,0,0,8,0,0,0,0,0x21,0,...u32(crc),...u32(d.length),...u32(d.length),...u16(nm.length),0,0,0,0,0,0,0,0,0,0,0,0,...u32(off)]),nm);
+    off+=lh.length+nm.length+d.length; });
+  let cl=0; cen.forEach(x=>cl+=x.length);
+  const end=new Uint8Array([0x50,0x4b,5,6,0,0,0,0,...u16(files.length),...u16(files.length),...u32(cl),...u32(off),0,0]);
+  return new Blob([...parts,...cen,end],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+const xe=s=>String(s==null?'':s).replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m])).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g,'');
+const colL=n=>{let s='';n++;while(n>0){const m=(n-1)%26;s=String.fromCharCode(65+m)+s;n=Math.floor((n-1)/26);}return s;};
+/* styles: 0 normal,1 bold,2 header,3 category,4 number 2dp,5 integer,6 percent,7 bold integer,8 input number,9 title,10 total row */
+const XSTYLES=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="2"><numFmt numFmtId="164" formatCode="#,##0.##"/><numFmt numFmtId="165" formatCode="#,##0"/></numFmts><fonts count="3"><font><sz val="11"/><name val="Noto Sans Lao"/></font><font><b/><sz val="11"/><name val="Noto Sans Lao"/></font><font><b/><sz val="14"/><name val="Noto Sans Lao"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3EAD7"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFDE9D0"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF8DC"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFBBBBBB"/></left><right style="thin"><color rgb="FFBBBBBB"/></right><top style="thin"><color rgb="FFBBBBBB"/></top><bottom style="thin"><color rgb="FFBBBBBB"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="11"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="10" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/><xf numFmtId="165" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/><xf numFmtId="164" fontId="0" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="165" fontId="1" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/></cellXfs></styleSheet>`;
+function exportXLSX(){
+  const W=sortedWeeks(); if(!W.length){ toast('ຍັງບໍ່ມີອາທິດ'); return; }
+  const sheets=[]; const shName=(w,i)=>`W${i+1} ${w.start}`; const q=n=>`'${n}'`;
+  const info=[]; // per week: {name, rowMap, cols, costCell}
+  W.forEach((w,wi)=>{
+    const nd=w.days, cB=3,cIn=4,cD0=5,cOut=5+nd,cTot=cOut+1,cEnd=cOut+2,cUse=cOut+3,cPr=cOut+4,cCost=cOut+5;
+    const name=shName(w,wi), prev=wi>0?info[wi-1]:null; const rowMap={}; const rows=[]; let r=1;
+    const cell=(c,v,s,f)=>{ const ref=colL(c)+(rows.length?rows[rows.length-1].r:1); };
+    const R=(rn,cells,ht)=>rows.push({r:rn,cells,ht});
+    const days=[...Array(nd).keys()].map(k=>addDays(w.start,k));
+    R(1,[[0,{s:`${state.settings.branch} — ລາຍງານນັບສະຕັອກ`,st:9}]]);
+    R(2,[[0,{s:weekFull(w),st:1}],[cEnd,{s:'ພະນັກງານ: '+(state.settings.staff||''),st:0}]]);
+    R(4,[[0,{s:'ໝວດ',st:2}],[1,{s:'ລາຍການ',st:2}],[2,{s:'ໜ່ວຍ',st:2}],[cB,{s:'ຍອດຍົກມາ',st:2}],[cIn,{s:'ໂອນເຂົ້າ',st:2}],...days.map((d,k)=>[cD0+k,{s:`${WD[dow(d)]} ${dnum(d)}`,st:2}]),[cOut,{s:'ໂອນອອກ',st:2}],[cTot,{s:'ລວມ',st:2}],[cEnd,{s:'ນັບໄດ້ຈິງ',st:2}],[cUse,{s:'ໃຊ້ໄປ',st:2}],[cPr,{s:'ລາຄາ/ໜ່ວຍ (₭)',st:2}],[cCost,{s:'ມູນຄ່າ (₭)',st:2}]],36);
+    r=5; const subs=[];
+    CATS.forEach(cat=>{
+      const arr=activeItems(w).filter(i=>i.cat===cat.id); if(!arr.length) return;
+      R(r,[[0,{s:`${CATS.indexOf(cat)+1}. ${cat.name} (${cat.en})`,st:3}],...[1,2,cB,cIn,...days.map((_,k)=>cD0+k),cOut,cTot,cEnd,cUse,cPr,cCost].map(c=>[c,{blank:1,st:3}])]); r++;
+      const first=r;
+      arr.forEach(it=>{
+        const c=calc(w,it.id), rw=w.rows[it.id]||{d:[]}, n=r; rowMap[it.id]=n; const L=x=>colL(x)+n;
+        const cells=[[0,{s:cat.en,st:0}],[1,{s:it.name,st:0}],[2,{s:it.unit,st:0}]];
+        // begin
+        let bf=null;
+        if(rw.begin==null && prev && prev.rowMap[it.id]){ const pr=prev.rowMap[it.id]; bf=`IF(${q(prev.name)}!${colL(prev.cEnd)}${pr}<>"",${q(prev.name)}!${colL(prev.cEnd)}${pr},${q(prev.name)}!${colL(prev.cTot)}${pr})`; }
+        cells.push([cB,bf?{f:bf,v:c.begin,st:8}:{n:c.begin,st:8}]);
+        cells.push([cIn,rw.tfIn!=null?{n:rw.tfIn,st:8}:{blank:1,st:8}]);
+        days.forEach((_,k)=>cells.push([cD0+k,rw.d&&rw.d[k]!=null?{n:rw.d[k],st:8}:{blank:1,st:8}]));
+        cells.push([cOut,rw.tfOut!=null?{n:rw.tfOut,st:8}:{blank:1,st:8}]);
+        cells.push([cTot,{f:`${L(cB)}+${L(cIn)}+SUM(${L(cD0)}:${L(cOut-1)})-${L(cOut)}`,v:c.total,st:4}]);
+        cells.push([cEnd,c.end!=null?{n:c.end,st:8}:{blank:1,st:8}]);
+        cells.push([cUse,{f:`IF(${L(cEnd)}<>"",${L(cTot)}-${L(cEnd)},IF(ABS(${L(cTot)})<0.000000001,0,""))`,v:c.usage!=null?c.usage:'',st:4}]);
+        cells.push([cPr,{n:c.price,st:8}]);
+        cells.push([cCost,{f:`IF(${L(cUse)}="",0,${L(cUse)}*${L(cPr)})`,v:c.cost,st:5}]);
+        R(r,cells); r++; });
+      const last=r-1;
+      R(r,[[0,{s:`ລວມ ${cat.name}`,st:3}],...[1,2,cB,cIn,...days.map((_,k)=>cD0+k),cOut,cTot,cEnd,cUse,cPr].map(c=>[c,{blank:1,st:3}]),[cCost,{f:`SUM(${colL(cCost)}${first}:${colL(cCost)}${last})`,v:wsum(w).by[cat.id].cost,st:10}]]); subs.push(`${colL(cCost)}${r}`); r++; });
+    r++; const S=wsum(w); const totRow=r;
+    R(r,[[0,{s:'ຕົ້ນທຶນທີ່ໃຊ້ໄປລວມ',st:3}],[cCost,{f:subs.join('+')||'0',v:S.cost,st:10}]]);
+    const costCell=`${colL(cCost)}${totRow}`; r+=2;
+    R(r,[[0,{s:'ຍອດຂາຍສຸດທິ',st:1}],[cCost,{n:salesOf(w).net,st:8}]]); const netCell=`${colL(cCost)}${r}`; r++;
+    R(r,[[0,{s:'% ຕົ້ນທຶນ',st:1}],[cCost,{f:`IF(${netCell}>0,${costCell}/${netCell},"")`,v:salesOf(w).net>0?S.cost/salesOf(w).net:'',st:6}]]);
+    info.push({name,rowMap,cEnd,cTot,costCell,netCell,rows,widths:[{c:0,w:12},{c:1,w:34},{c:2,w:14},...Array.from({length:cCost-2},(_,i)=>({c:i+3,w:12})),{c:cCost,w:16}],freeze:{r:4,c:2},nd,w});
+  });
+  // summary sheet
+  const sr=[]; const R2=(rn,cells,ht)=>sr.push({r:rn,cells,ht});
+  R2(1,[[0,{s:`${state.settings.branch} — ສະຫຼຸບຕົ້ນທຶນ ແລະ ຍອດຂາຍ`,st:9}]]);
+  R2(3,[0,1,2,3,4,5,6,7].map((c,i)=>[c,{s:['ອາທິດ','ຊ່ວງ','ຕົ້ນທຶນ (₭)','ຍອດຂາຍສຸດທິ (₭)','% ຕົ້ນທຶນ','ກຳໄລຂັ້ນຕົ້ນ (₭)','ເປົ້າໝາຍ (₭)','% ຕາມເປົ້າ'][i],st:2}]),30);
+  W.forEach((w,i)=>{ const n=4+i, I=info[i], S=wsum(w), SL=salesOf(w), tg=n0(w.target);
+    R2(n,[[0,{s:`ອາທິດ ${i+1}`,st:0}],[1,{s:weekLabel(w),st:0}],[2,{f:`${q(I.name)}!${I.costCell}`,v:S.cost,st:5}],[3,{f:`${q(I.name)}!${I.netCell}`,v:SL.net,st:5}],
+      [4,{f:`IF(D${n}>0,C${n}/D${n},"")`,v:SL.net>0?S.cost/SL.net:'',st:6}],[5,{f:`D${n}-C${n}`,v:SL.net-S.cost,st:5}],[6,tg?{n:tg,st:8}:{blank:1,st:8}],[7,{f:`IF(G${n}>0,D${n}/G${n},"")`,v:tg>0?SL.net/tg:'',st:6}]]); });
+  const tn=4+W.length, a1=4, a2=tn-1; const TS=W.reduce((s,w)=>s+wsum(w).cost,0), TN=W.reduce((s,w)=>s+salesOf(w).net,0), TT=W.reduce((s,w)=>s+n0(w.target),0);
+  R2(tn,[[0,{s:'ລວມທັງໝົດ',st:3}],[1,{blank:1,st:3}],[2,{f:`SUM(C${a1}:C${a2})`,v:TS,st:10}],[3,{f:`SUM(D${a1}:D${a2})`,v:TN,st:10}],[4,{f:`IF(D${tn}>0,C${tn}/D${tn},"")`,v:TN>0?TS/TN:'',st:6}],[5,{f:`D${tn}-C${tn}`,v:TN-TS,st:10}],[6,{f:`SUM(G${a1}:G${a2})`,v:TT,st:10}],[7,{f:`IF(G${tn}>0,D${tn}/G${tn},"")`,v:TT>0?TN/TT:'',st:6}]]);
+  R2(tn+2,[[0,{s:'ເກນຕົ້ນທຶນ',st:1}],[2,{n:n0(state.settings.costLimit)||0.35,st:6}]]);
+  R2(tn+3,[[0,{s:'ສະຖານະ',st:1}],[2,{f:`IF(E${tn}="","",IF(E${tn}>C${tn+2},"ຕົ້ນທຶນເກີນເກນ","ຢູ່ໃນເກນ"))`,v:TN>0?(TS/TN>(n0(state.settings.costLimit)||0.35)?'ຕົ້ນທຶນເກີນເກນ':'ຢູ່ໃນເກນ'):'',st:1}]]);
+  const sumSheet={name:'ສະຫຼຸບ',rows:sr,widths:[{c:0,w:14},{c:1,w:22},{c:2,w:18},{c:3,w:20},{c:4,w:12},{c:5,w:20},{c:6,w:18},{c:7,w:12}],freeze:{r:3,c:0}};
+  const all=[sumSheet,...info.map(I=>({name:I.name,rows:I.rows,widths:I.widths,freeze:I.freeze}))];
+  const sx=s=>{
+    const rowsX=s.rows.sort((x,y)=>x.r-y.r).map(row=>{
+      const cx=row.cells.sort((x,y)=>x[0]-y[0]).map(([c,o])=>{ const ref=colL(c)+row.r, st=o.st?` s="${o.st}"`:'';
+        if(o.blank) return `<c r="${ref}"${st}/>`;
+        if(o.f!=null){ const isS=typeof o.v==='string'; return `<c r="${ref}"${st}${isS?' t="str"':''}><f>${xe(o.f)}</f><v>${isS?xe(o.v):(isFinite(o.v)?o.v:0)}</v></c>`; }
+        if(o.n!=null) return `<c r="${ref}"${st}><v>${o.n}</v></c>`;
+        return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xe(o.s)}</t></is></c>`; }).join('');
+      return `<row r="${row.r}"${row.ht?` ht="${row.ht}" customHeight="1"`:''}>${cx}</row>`; }).join('');
+    const fz=s.freeze&&(s.freeze.r||s.freeze.c)?`<pane ${s.freeze.c?`xSplit="${s.freeze.c}" `:''}${s.freeze.r?`ySplit="${s.freeze.r}" `:''}topLeftCell="${colL(s.freeze.c)}${s.freeze.r+1}" activePane="${s.freeze.r&&s.freeze.c?'bottomRight':(s.freeze.r?'bottomLeft':'topRight')}" state="frozen"/>`:'';
+    return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0">${fz}</sheetView></sheetViews><cols>${s.widths.map(x=>`<col min="${x.c+1}" max="${x.c+1}" width="${x.w}" customWidth="1"/>`).join('')}</cols><sheetData>${rowsX}</sheetData><pageMargins left="0.4" right="0.4" top="0.5" bottom="0.5" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToHeight="0"/></worksheet>`; };
+  const NS='xmlns="http://schemas.openxmlformats.org/package/2006/relationships"';
+  const files=[
+    {name:'[Content_Types].xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${all.map((_,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}</Types>`},
+    {name:'_rels/.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships ${NS}><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`},
+    {name:'xl/workbook.xml',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>${all.map((s,i)=>`<sheet name="${xe(s.name)}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('')}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`},
+    {name:'xl/_rels/workbook.xml.rels',data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships ${NS}>${all.map((_,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')}<Relationship Id="rId${all.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`},
+    {name:'xl/styles.xml',data:XSTYLES},
+    ...all.map((s,i)=>({name:`xl/worksheets/sheet${i+1}.xml`,data:sx(s)}))];
+  const blob=zipStore(files); const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`INVENTORY_${(state.settings.branch||'branch').replace(/[^A-Za-z0-9]+/g,'_')}_${toISO(new Date())}.xlsx`; document.body.appendChild(a); a.click(); setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},800);
+  toast(`ສົ່ງອອກ Excel ແລ້ວ (${W.length} ອາທິດ, ມີສູດ)`);
+}
+
+
+/* ============ ເຄື່ອນໄຫວສິນຄ້າ 5 ອາທິດ ============ */
+function V_flow(){
+  const ms=monthsList(); if(!ms.length) return noWeek();
+  if(!ui.month || !ms.includes(ui.month)){ const w0=curWeek(); ui.month=w0?w0.start.slice(0,7):ms[ms.length-1]; }
+  const A=monthAgg(ui.month), W=A.W;
+  if(ui.fwk==null) ui.fwk=Math.max(0,W.findIndex(x=>x.id===ui.wid));
+  if(ui.fwk!=='all' && ui.fwk>=W.length) ui.fwk=Math.max(0,W.length-1);
+  const mode=ui.fwk;
+  const nTabs=Math.max(5,W.length);
+  const tabs=[...Array(nTabs).keys()].map(i=>{ const w=W[i]; return w?`<button class="btn ${mode===i?'primary':''}" data-act="fwk" data-v="${i}">ອາທິດ ${i+1}<br><small>${weekLabel(w)}</small></button>`:`<button class="btn" data-act="newWeek" title="ຍັງບໍ່ໄດ້ເປີດ">ອາທິດ ${i+1}<br><small>+ ເປີດ</small></button>`; }).join('')
+    +`<button class="btn ${mode==='all'?'primary':''}" data-act="fwk" data-v="all">ທັງເດືອນ<br><small>ຕໍ່ຍອດ ອ.1→ອ.${W.length}</small></button>`;
+  const head=`<div class="view-title"><div><h2>ເຄື່ອນໄຫວສິນຄ້າ 5 ອາທິດ — ${monthName(ui.month)}</h2><p>ແຕ່ລະອາທິດ: ຍອດຍົກມາ + ຮັບເຂົ້າ/ໂອນເຂົ້າ − ເອົາອອກ/ໂອນອອກ = ລວມ → ນັບໄດ້ຈິງ (ເຫຼືອ) → ໃຊ້ໄປ. ຍອດເຫຼືອຂອງອາທິດກ່ອນຍົກໄປເປັນຍອດຍົກມາຂອງອາທິດຖັດໄປ.</p></div>
+    <div class="actions"><select data-f="month">${ms.map(m=>`<option value="${m}" ${m===ui.month?'selected':''}>${monthName(m)}</option>`).join('')}</select><button class="btn" data-act="printPage">🖨 ພິມໜ້ານີ້</button></div></div>
+    <div class="wkpick" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">${tabs}</div>`;
+  if(mode==='all'){
+    const ids=A.rows.map(r=>r.it);
+    const gh=W.map((w,i)=>`<th colspan="5" class="grp">ອາທິດ ${i+1} · ${weekLabel(w)}</th>`).join('');
+    const sh=W.map(()=>'<th>ຍົກມາ</th><th>ເຂົ້າ</th><th>ອອກ</th><th>ໃຊ້ໄປ</th><th>ເຫຼືອ</th>').join('');
+    const body=CATS.map(cat=>{
+      const arr=ids.filter(i=>i.cat===cat.id); if(!arr.length) return '';
+      return `<tr class="cat"><td colspan="${2+W.length*5+3}">${CATS.indexOf(cat)+1}. ${cat.name} (${cat.en})</td></tr>`+arr.map(it=>{
+        const cs=W.map(w=>calc(w,it.id)); const lc=cs[cs.length-1], endv=lc.end!=null?lc.end:lc.total;
+        return `<tr><td class="name">${esc(it.name)}</td><td class="unit">${esc(it.unit)}</td>${cs.map(c=>`<td class="num">${fn(c.begin)}</td><td class="num">${c.inn?fn(c.inn):''}</td><td class="num">${c.out?fn(c.out):''}</td><td class="num">${c.usage==null?'—':fn(c.usage)}</td><td class="num"><b>${fn(c.end!=null?c.end:c.total)}</b>${c.end==null&&!c.counted?'*':''}</td>`).join('')}
+        <td class="num">${fn(cs.reduce((s,c)=>s+c.inn,0))}</td><td class="num">${fn(cs.reduce((s,c)=>s+(c.usage||0),0))}</td><td class="num"><b>${fn(endv)}</b></td></tr>`; }).join('')+
+        `<tr class="tot"><td class="name">ລວມມູນຄ່າໃຊ້ໄປ ${cat.name}</td><td colspan="${W.length*5+2}" class="num">${fm(A.byCat[cat.id])} ₭</td></tr>`; }).join('');
+    return `${head}<div class="tbl-wrap"><table class="sheet flowtbl"><thead><tr><th rowspan="2" class="name">ລາຍການ</th><th rowspan="2">ໜ່ວຍ</th>${gh}<th colspan="3" class="grp">ລວມເດືອນ</th></tr><tr>${sh}<th>ຮັບເຂົ້າ</th><th>ໃຊ້ໄປ</th><th>ເຫຼືອ</th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="hint">* = ອາທິດນັ້ນຍັງບໍ່ໄດ້ນັບ (ຍອດເຫຼືອເປັນຍອດຄາດ). ຮັບເຂົ້າ/ອອກ ລວມທັງໂອນ ແລະ ການຮັບເຂົ້າລາຍວັນ. ຕົ້ນທຶນລວມເດືອນ ${fm(A.cost)} ₭.</p>`;
+  }
+  const w=W[mode]; if(!w) return `${head}<div class="card muted" style="text-align:center">ຍັງບໍ່ມີອາທິດ</div>`;
+  ui.wid=w.id; const dis=w.locked?'disabled':''; const pw=prevWeek(w);
+  const body=CATS.map(cat=>{
+    const arr=activeItems(w).filter(i=>i.cat===cat.id); if(!arr.length) return '';
+    return `<tr class="cat"><td colspan="10">${CATS.indexOf(cat)+1}. ${cat.name} (${cat.en})</td></tr>`+arr.map(it=>{
+      const r=rowOf(w,it.id,false)||{d:[]}, c=calc(w,it.id);
+      const inp=(k,val)=>`<input class="cell" type="text" inputmode="decimal" data-k="${k}" data-i="${it.id}" value="${val!=null?fq(val):''}" ${dis}>`;
+      return `<tr><td class="name">${esc(it.name)}</td><td class="unit">${esc(it.unit)}</td>
+        <td class="num" data-o="beginT" data-i="${it.id}"></td><td>${inp('tfIn',r.tfIn)}</td><td class="num">${c.dsum?fn(c.dsum):''}</td><td>${inp('tfOut',r.tfOut)}</td>
+        <td class="num" data-o="total" data-i="${it.id}"></td><td data-o="endcell" data-i="${it.id}">${inp('end',r.end)}</td>
+        <td class="num" data-o="usage" data-i="${it.id}"></td><td class="num" data-o="cost" data-i="${it.id}"></td></tr>`; }).join('')+
+      `<tr class="tot"><td class="name">ລວມ ${cat.name}</td><td colspan="8"></td><td class="num" data-ct="cost" data-cat="${cat.id}"></td></tr>`; }).join('');
+  return `${lockBanner(w)}${head}
+  <div class="card" style="margin-bottom:10px"><b>ອາທິດ ${mode+1}</b> · ${esc(weekFull(w))} · ${pw?`ຍອດຍົກມາຈາກອາທິດ ${mode} (${weekLabel(pw)})`:'ອາທິດທຳອິດ — ຍອດຍົກມາຈາກເດືອນກ່ອນ ຫຼື ປ້ອນເອງໃນແຖບຕາຕະລາງອາທິດ'}${w.locked?' · 🔒 ລັອກແລ້ວ':''}</div>
+  <div class="tbl-wrap"><table class="sheet flowtbl"><thead><tr><th class="name">ລາຍການ</th><th>ໜ່ວຍ</th><th>ຍອດຍົກມາ<br><small>${pw?'ຈາກອ.'+mode:'ເລີ່ມຕົ້ນ'}</small></th><th>ຮັບເຂົ້າ / ໂອນເຂົ້າ</th><th>ຮັບເຂົ້າລາຍວັນ</th><th>ເອົາອອກ / ໂອນອອກ</th><th>ລວມ</th><th>ນັບໄດ້ຈິງ (ເຫຼືອ)</th><th>ໃຊ້ໄປ</th><th>ມູນຄ່າ (₭)</th></tr></thead><tbody>${body}</tbody></table></div>
+  <p class="hint">ພິມໃສ່ "ຮັບເຂົ້າ/ໂອນເຂົ້າ" ຫຼື "ເອົາອອກ/ໂອນອອກ" ໄດ້ເລີຍ (ໃສ່ສູດໄດ້ ເຊັ່ນ 27*50+31). "ຮັບເຂົ້າລາຍວັນ" ມາຈາກຕາຕະລາງອາທິດ/ປຸ່ມບັນທຶກຮັບເຂົ້າ. ຍອດເຫຼືອຂອງອາທິດນີ້ຈະຖືກຍົກໄປເປັນຍອດຍົກມາຂອງອາທິດຖັດໄປໂດຍອັດຕະໂນມັດ. ກົດ 🖨 ເພື່ອພິມ.</p>`;
 }
 
 /* ============ ເລີ່ມຕົ້ນ ============ */
