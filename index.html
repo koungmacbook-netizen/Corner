@@ -221,6 +221,7 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
   #printArea .num{text-align:right}
   #printArea .sheet th,#printArea .sheet td{position:static!important}
 }
+@media print{.buildstamp{display:none}}
 
 </style>
 </head>
@@ -242,6 +243,7 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
   <nav class="tabs"><div class="wrap" id="tabs"></div></nav>
 </header>
 <main><div class="wrap" id="view"></div></main>
+<div class="buildstamp" style="text-align:center;font-size:11px;color:#999;padding:14px 0 24px">ເວີຊັນ 2026-11-18 09:42 · ມີ: ນຳເຂົ້າ Excel ສາຂາ</div>
 <div id="modal"></div>
 <div id="toast" role="status" aria-live="polite"></div>
 <div id="printArea"></div>
