@@ -242,7 +242,7 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
       <button class="btn ghost" data-act="printPage" title="ພິມໜ້ານີ້" aria-label="ພິມໜ້ານີ້">🖨</button>
       <button class="btn ghost" id="themeBtn" title="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ" aria-label="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ">◐</button>
     </div>
-    <span class="ver" id="verTag" title="ເວີຊັນໂປຣແກຣມ — ໃຊ້ກວດວ່າອັບເດດແລ້ວ">v2.6<small>2026-11-26 18:05</small></span>
+    <span class="ver" id="verTag" title="ເວີຊັນໂປຣແກຣມ — ໃຊ້ກວດວ່າອັບເດດແລ້ວ">v2.7<small>2026-11-26 18:18</small></span>
     <span class="save-ind" id="saveInd"></span>
   </div>
   <nav class="tabs"><div class="wrap" id="tabs"></div></nav>
@@ -273,7 +273,7 @@ const MS = ['ມ.ກ.','ກ.ພ.','ມ.ນ.','ມ.ສ.','ພ.ພ.','ມິ.ຖ.'
 const ML = ['ມັງກອນ','ກຸມພາ','ມີນາ','ເມສາ','ພຶດສະພາ','ມິຖຸນາ','ກໍລະກົດ','ສິງຫາ','ກັນຍາ','ຕຸລາ','ພະຈິກ','ທັນວາ'];
 const REASONS = ['ໝົດອາຍຸ','ເສຍຫາຍ / ເປື້ອນ','ເຮັດຜິດ / ເຮັດຖິ້ມ','ຕົກຫຼົ່ນ / ຫົກ','ອາຫານບໍ່ໄດ້ມາດຕະຖານ','ອື່ນໆ'];
 const TABS = [
-  ['overview','ພາບລວມ'],['branches','ທຸກສາຂາ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['flow','ເຄື່ອນໄຫວ 5 ອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],['pos','ນຳເຂົ້າ POS'],['bom','ສູດ BOM'],['analysis','ວິເຄາະຕົ້ນທຶນ'],
+  ['overview','ພາບລວມ'],['branches','ທຸກສາຂາ'],['count','ນັບສະຕັອກ'],['sheet','ຕາຕະລາງອາທິດ'],['flow','ເຄື່ອນໄຫວ 5 ອາທິດ'],['profit','ຍອດຂາຍ & ຕົ້ນທຶນ'],['pos','ນຳເຂົ້າ POS'],['usage','ຍອດໃຊ້ວັດຖຸດິບ'],['bom','ສູດ BOM'],['analysis','ວິເຄາະຕົ້ນທຶນ'],
   ['month','ສະຫຼຸບເດືອນ'],['waste','ຂອງເສຍ'],['order','ແນະນຳສັ່ງຊື້'],['po','ໃບສັ່ງຊື້'],['items','ລາຍການສິນຄ້າ'],['settings','ຕັ້ງຄ່າ / ສຳຮອງ']
 ];
 
@@ -524,7 +524,7 @@ function renderChrome(){
 function render(){
   renderChrome();
   const v=$('#view');
-  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,flow:V_flow,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,pos:V_pos,bom:V_bom,analysis:V_analysis,branches:V_branches,items:V_items,settings:V_settings}[ui.tab]||V_overview;
+  const fn_ = {overview:V_overview,count:V_count,sheet:V_sheet,flow:V_flow,profit:V_profit,month:V_month,waste:V_waste,order:V_order,po:V_po,pos:V_pos,usage:V_usage,bom:V_bom,analysis:V_analysis,branches:V_branches,items:V_items,settings:V_settings}[ui.tab]||V_overview;
   v.innerHTML = remindHTML() + fn_();
   refreshCalc();
   const hdr=$('.top'); if(hdr) document.documentElement.style.setProperty('--hdr',(hdr.offsetHeight-1)+'px');
@@ -1011,6 +1011,7 @@ function onField(t){
   if(f==='poOnly'){ ui.poOnly=t.checked; saveUI(); render(); return; }
   if(f==='onlyLow'){ ui.onlyLow=t.checked; saveUI(); render(); return; }
   if(f==='target'){ ui.target=Math.max(1,Math.min(90,+t.value||14)); saveUI(); render(); return; }
+  if(f==='umode'||f==='ucat'||f==='uonly'){ ui[f]=t.value; saveUI(); render(); return; }
   if(f==='pmf'){ ui.pmf=t.value; saveUI(); render(); return; }
   if(f==='month'){ ui.month=t.value; ui.fwk=0; saveUI(); render(); return; }
   if(f==='wmonth'){ ui.wmonth=t.value; saveUI(); render(); return; }
@@ -1735,6 +1736,60 @@ function V_bom(){
   ${mt}
   <div class="card"><h3>ແມັບວັດຖຸດິບ BOM → ລາຍການສະຕັອກ</h3><p class="hint" style="margin-top:0">BOM ໃຊ້ກຣາມ/ຊິ້ນ ແຕ່ສະຕັອກນັບເປັນ ກກ, ຖົງ 220 ກ., ກະປອງ ຈຶ່ງຕ້ອງມີຕົວຄູນ (ຕົວຢ່າງ: Fries 1 ກຣາມ = 0.001 ກກ, ລົດຊາດ 1 ກຣາມ = 1/220 ຖົງ). ແຖວທີ່ "ບໍ່ໄດ້ແມັບ" (ເຊັ່ນ ກະດາດຮອງ 23×23 ທີ່ສະຕັອກນັບເປັນ ກກ, ຫຼອດ) ຈະບໍ່ຖືກຄິດໃນສູດ — ເລືອກລາຍການ ແລະ ໃສ່ຕົວຄູນເອງໄດ້.</p>
    <div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ວັດຖຸດິບໃນ BOM</th><th>ໃຊ້ໃນ (ເມນູ)</th><th>ໜ່ວຍ BOM</th><th>ລາຍການສະຕັອກ</th><th>ຕົວຄູນ</th><th></th></tr></thead><tbody>${mapRows}</tbody></table></div></div>`;
+}
+
+
+/* ============ ຍອດໃຊ້ວັດຖຸດິບ: POS × ສູດ  ທຽບ  ການນັບສະຕັອກ ============ */
+function usageAgg(weeks){
+  const rows={}, noRec={}; let posWeeks=0, sales=0, coveredSales=0;
+  const row=id=>rows[id]||(rows[id]={id,theo:0,act:0,actW:0,uncW:0,contrib:{}});
+  weeks.forEach(w=>{
+    if(!w.pos||!Object.keys(w.pos.items).length) return; posWeeks++;
+    const have=new Set();
+    Object.entries(w.pos.items).forEach(([n,v])=>{ const k=kindOf(n,v); if(k==='adjust') return; sales+=Math.max(0,v.a);
+      const rc=(pmGet(n).recipe||[]).filter(r=>itemById(r.id));
+      if(!rc.length){ const o=noRec[n]||(noRec[n]={q:0,a:0,k}); o.q+=v.q; o.a+=v.a; return; }
+      coveredSales+=Math.max(0,v.a);
+      rc.forEach(r=>{ const o=row(r.id); const u=v.q*r.q; o.theo+=u; const c=o.contrib[n]||(o.contrib[n]={q:0,u:0,per:r.q}); c.q+=v.q; c.u+=u; have.add(r.id); }); });
+    activeItems(w).forEach(it=>{ const c=calc(w,it.id); if(!have.has(it.id)&&!(c.usage>0)) return; const o=row(it.id);
+      if(c.counted&&c.usage!=null){ o.act+=c.usage; o.actW++; } else o.uncW++; });
+  });
+  return {rows,noRec,posWeeks,sales,coveredSales};
+}
+function V_usage(){
+  const w0=curWeek(); if(!w0) return noWeek();
+  const mode=ui.umode||'week', catF=ui.ucat||'all', only=ui.uonly||'recipe', tol=n0(state.settings.varTol)||0.05;
+  const ms=monthsList(); if(!ui.month||!ms.includes(ui.month)) ui.month=w0.start.slice(0,7);
+  const weeks = mode==='month' ? monthAgg(ui.month).W : [w0];
+  const U=usageAgg(weeks), label = mode==='month'?monthName(ui.month):weekFull(w0);
+  let list=Object.values(U.rows).map(o=>{ const it=itemById(o.id); const diff=o.actW?o.act-o.theo:null; return Object.assign(o,{it,diff,pct:o.actW&&o.theo>0?diff/o.theo:null,val:diff!=null?diff*(it?it.price:0):0}); }).filter(o=>o.it);
+  if(only==='recipe') list=list.filter(o=>o.theo>0);
+  if(catF!=='all') list=list.filter(o=>o.it.cat===catF);
+  list.sort((x,y)=>CATS.findIndex(c=>c.id===x.it.cat)-CATS.findIndex(c=>c.id===y.it.cat)||y.theo*(y.it.price||0)-x.theo*(x.it.price||0));
+  const key=Object.values(U.rows).filter(o=>o.it&&o.it.cat==='food'&&o.theo>0).sort((x,y)=>y.theo-x.theo).slice(0,4);
+  const kpi=key.map(o=>{ const d=o.actW?o.act-o.theo:null; const bad=d!=null&&o.theo>0&&Math.abs(d/o.theo)>tol;
+    return `<div class="card kpi"><div class="lbl">${esc(o.it.name)} (${esc(o.it.unit.split(/[\s*(]/)[0])})</div><div class="val">${fn(o.theo)}</div><div class="sub">ຂາຍຕາມ POS × ສູດ · ນັບສະຕັອກໃຊ້ໄປ <b>${o.actW?fn(o.act):'ຍັງບໍ່ນັບ'}</b>${d!=null?` · ຜິດແຜກ <span class="${bad?'neg':''}">${d>0?'+':''}${fn(d)}${o.theo>0?' ('+fp(d/o.theo)+')':''}</span>`:''}</div></div>`; }).join('');
+  const hint=o=>{ if(!(o.theo>0&&o.act>0)) return ''; const r=o.act/o.theo; for(const f of [10,20,50,100,220,1000,18000]){ if(Math.abs(r/f-1)<0.15) return `<span class="chip warn" title="ໃຊ້ຈິງ ≈ ${f} ເທົ່າຂອງທິດສະດີ">ຕົວຄູນສູດອາດຕ່ຳ ~${f} ເທົ່າ</span>`; if(Math.abs(r*f-1)<0.15) return `<span class="chip warn" title="ໃຊ້ຈິງ ≈ 1/${f} ຂອງທິດສະດີ">ຕົວຄູນສູດອາດສູງ ~${f} ເທົ່າ</span>`; } return ''; };
+  const status=o=>{ if(!o.actW) return `<span class="chip">ຍັງບໍ່ນັບ${o.uncW?` (${o.uncW} ອາທິດ)`:''}</span>`; if(!(o.theo>0)) return '<span class="chip warn">ບໍ່ມີສູດ</span>'; if(o.pct>tol) return '<span class="chip bad">ໃຊ້ເກີນສູດ</span>'; if(o.pct<-tol) return '<span class="chip warn">ໃຊ້ຕ່ຳກວ່າສູດ</span>'; return '<span class="chip ok">ປົກກະຕິ</span>'; };
+  const body=CATS.map(cat=>{ const arr=list.filter(o=>o.it.cat===cat.id); if(!arr.length) return '';
+    return `<tr class="cat"><td colspan="8">${cat.name}</td></tr>`+arr.map(o=>{ const bad=o.pct!=null&&Math.abs(o.pct)>tol, pk=o.it.pack>1?o.theo/o.it.pack:null;
+      const det=Object.entries(o.contrib).sort((x,y)=>y[1].u-x[1].u).map(([n,c])=>`<div>${esc(n)}: ຂາຍ ${fn(c.q)} × ${fqs(c.per)} = <b>${fn(c.u)}</b></div>`).join('');
+      return `<tr><td style="white-space:normal;min-width:200px"><details><summary>${esc(o.it.name)}</summary><div class="muted" style="font-size:12.5px;padding:4px 0">${det||'ບໍ່ມີເມນູທີ່ໃຊ້ວັດຖຸດິບນີ້ຕາມສູດ'}</div></details></td><td>${esc(o.it.unit)}</td>
+      <td class="num">${o.theo>0?fn(o.theo):'—'}${pk?`<div class="muted" style="font-size:11.5px">≈ ${fn(pk)} ແພັກ</div>`:''}</td><td class="num">${o.actW?fn(o.act):'—'}${mode==='month'&&o.actW&&o.uncW?`<div class="muted" style="font-size:11.5px">ນັບ ${o.actW}/${o.actW+o.uncW} ອາທິດ</div>`:''}</td>
+      <td class="num ${bad?'neg':''}">${o.diff==null?'—':(o.diff>0?'+':'')+fn(o.diff)}</td><td class="num ${bad?'neg':''}">${o.pct!=null?fp(o.pct):'—'}</td><td class="num ${bad?'neg':''}">${o.diff==null?'—':fm(o.val)}</td><td>${status(o)} ${hint(o)}</td></tr>`; }).join(''); }).join('');
+  const nr=Object.entries(U.noRec).sort((x,y)=>y[1].a-x[1].a||y[1].q-x[1].q);
+  const cov=U.sales>0?U.coveredSales/U.sales:0;
+  return `<div class="view-title"><div><h2>ຍອດໃຊ້ວັດຖຸດິບ — ${esc(label)}</h2><p>ຄຳນວນຈາກຍອດຂາຍ POS × ສູດ (BOM) ແລ້ວທຽບກັບຍອດໃຊ້ທີ່ໄດ້ຈາກການນັບສະຕັອກ (ຍົກມາ + ຮັບເຂົ້າ − ເຫຼືອ)</p></div>
+   <div class="actions"><select data-f="umode"><option value="week" ${mode==='week'?'selected':''}>ອາທິດນີ້</option><option value="month" ${mode==='month'?'selected':''}>ທັງເດືອນ (ອາທິດທີ່ມີ POS)</option></select>
+   <select data-f="ucat"><option value="all">ທຸກໝວດ</option>${CATS.map(c=>`<option value="${c.id}" ${catF===c.id?'selected':''}>${c.name}</option>`).join('')}</select>
+   <select data-f="uonly"><option value="recipe" ${only==='recipe'?'selected':''}>ສະເພາະລາຍການທີ່ມີສູດ</option><option value="all" ${only==='all'?'selected':''}>ທຸກລາຍການທີ່ມີການໃຊ້</option></select>
+   <button class="btn" data-act="printPage">🖨 ພິມ</button></div></div>
+  ${U.posWeeks?'':`<div class="banner warn"><span>ຍັງບໍ່ມີຂໍ້ມູນ POS ໃນ${mode==='month'?'ເດືອນ':'ອາທິດ'}ນີ້ — ນຳເຂົ້າໃນແຖບ "ນຳເຂົ້າ POS" ກ່ອນ</span><button class="btn sm" data-act="tab" data-v="pos">ນຳເຂົ້າ POS</button></div>`}
+  ${U.posWeeks&&cov<0.95?`<div class="banner warn"><span>ສູດຄອບຄຸມ ${fp(cov)} ຂອງຍອດຂາຍ POS — ຍອດໃຊ້ຕາມທິດສະດີຈຶ່ງຕ່ຳກວ່າຄວາມຈິງ. ເມນູທີ່ຍັງບໍ່ມີສູດ: ${nr.slice(0,6).map(([n,v])=>esc(n)+' ('+fn(v.q)+')').join(', ')}${nr.length>6?' ...':''}</span><button class="btn sm" data-act="tab" data-v="pos">ຜູກສູດ BOM</button></div>`:''}
+  ${kpi?`<div class="grid kpis">${kpi}</div><div class="sp"></div>`:''}
+  <div class="card"><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ວັດຖຸດິບ / ບັນຈຸພັນ <span class="muted" style="font-weight:400">(ກົດເບິ່ງເມນູທີ່ໃຊ້)</span></th><th>ໜ່ວຍ</th><th>ຄວນໃຊ້ (POS × ສູດ)</th><th>ໃຊ້ຈິງ (ນັບສະຕັອກ)</th><th>ຜິດແຜກ</th><th>%</th><th>ມູນຄ່າຜິດແຜກ (₭)</th><th>ສະຖານະ</th></tr></thead><tbody>${body||'<tr><td colspan="8" class="muted" style="text-align:center;padding:16px">ບໍ່ມີຂໍ້ມູນ — ຜູກເມນູ POS ກັບສູດ BOM (ແຖບ "ນຳເຂົ້າ POS") ກ່ອນ</td></tr>'}</tbody></table></div>
+   <p class="hint" style="margin-bottom:0">"ໃຊ້ຈິງ" ມີສະເພາະອາທິດທີ່ນັບສະຕັອກແລ້ວ. ຜິດແຜກບວກ = ໃຊ້ຫຼາຍກວ່າທີ່ຍອດຂາຍຄວນໃຊ້ (ຂອງເສຍ, ແຈກ, ຊັ່ງເກີນ, ນັບຜິດ ຫຼື ເມນູຂາຍບໍ່ຜ່ານ POS). ຖ້າຜິດແຜກໃຫຍ່ເກືອບເທົ່າ 10/50/100/220 ເທົ່າ ມັກແມ່ນຕົວຄູນແປງໜ່ວຍໃນສູດຜິດ (ແຖບ "ສູດ BOM" → ຕາຕະລາງແມັບ).</p></div>
+  ${nr.length?`<div class="sp"></div><div class="card"><h3>ເມນູທີ່ຂາຍແຕ່ຍັງບໍ່ມີສູດ (ບໍ່ຖືກນັບໃນຍອດໃຊ້ຂ້າງເທິງ)</h3><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ເມນູ POS</th><th>ປະເພດ</th><th>ຈຳນວນຂາຍ</th><th>ຍອດ (₭)</th></tr></thead><tbody>${nr.map(([n,v])=>`<tr><td>${esc(n)}</td><td>${KINDS[v.k]}</td><td class="num">${fn(v.q)}</td><td class="num">${fm(v.a)}</td></tr>`).join('')}</tbody></table></div></div>`:''}`;
 }
 
 /* ============ ເປົ້າໝາຍເດືອນ ============ */
