@@ -242,7 +242,7 @@ input.txt:focus{border-color:var(--accent);background:var(--card)}
       <button class="btn ghost" data-act="printPage" title="ພິມໜ້ານີ້" aria-label="ພິມໜ້ານີ້">🖨</button>
       <button class="btn ghost" id="themeBtn" title="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ" aria-label="ສະຫຼັບໂໝດມືດ/ສະຫວ່າງ">◐</button>
     </div>
-    <span class="ver" id="verTag" title="ເວີຊັນໂປຣແກຣມ — ໃຊ້ກວດວ່າອັບເດດແລ້ວ">v2.7<small>2026-11-26 18:18</small></span>
+    <span class="ver" id="verTag" title="ເວີຊັນໂປຣແກຣມ — ໃຊ້ກວດວ່າອັບເດດແລ້ວ">v2.8<small>2026-11-26 18:37</small></span>
     <span class="save-ind" id="saveInd"></span>
   </div>
   <nav class="tabs"><div class="wrap" id="tabs"></div></nav>
@@ -1130,6 +1130,9 @@ document.addEventListener('click', e=>{
     case 'mmode': ui.mmode=v; saveUI(); render(); break;
     case 'brNew': openNewBranch(); break;
     case 'bomAuto': bomAutoLink(); break;
+    case 'posMix': openMix(decodeURIComponent(b.dataset.n)); break;
+    case 'mixSave': saveMix(); break;
+    case 'mixEqual': $$('[data-mixq]').forEach(el=>el.value=100); break;
     case 'bomSeed': useBomSeed(); break;
     case 'brImport': openImportActive(); break;
     case 'impApply': applyImportActive(); break;
@@ -1179,7 +1182,7 @@ document.addEventListener('change', e=>{
     } else { const fr=new FileReader(); fr.onload=()=>setPOSImport(f.name,parseCSV(String(fr.result))); fr.readAsText(f); }
     return; }
   if(t.dataset.pi){ const k=t.dataset.pi; if(!POSIMP) return; if(k==='hdr'){ POSIMP.hdr=Math.max(0,(+t.value||1)-1); POSIMP.map=guessMap(POSIMP.rows[POSIMP.hdr]||[]); } else if(k==='upd'){ POSIMP.updateLines=t.checked; } else POSIMP.map[k]=+t.value; render(); return; }
-  if(t.dataset.pn){ const n=decodeURIComponent(t.dataset.pn), pm=pmSet(n); pm[t.dataset.p]=t.value; if(t.dataset.p==='bom') pm.recipe=t.value?bomRecipe(bomMenu(t.value)).rec:[]; if(t.dataset.p==='line'&&t.value){ const l=(curWeek().sales.lines.find(x=>x.id===t.value)||{}); if(l.g) pm.g=l.g; } state.weeks.forEach(x=>{ if(x.pos&&x.pos.items[n]) syncLines(x); }); save(); render(); return; }
+  if(t.dataset.pn){ const n=decodeURIComponent(t.dataset.pn), pm=pmSet(n); pm[t.dataset.p]=t.value; if(t.dataset.p==='bom'){ pm.mix=null; pm.recipe=recipeFor(t.value,pm); } if(t.dataset.p==='line'&&t.value){ const l=(curWeek().sales.lines.find(x=>x.id===t.value)||{}); if(l.g) pm.g=l.g; } state.weeks.forEach(x=>{ if(x.pos&&x.pos.items[n]) syncLines(x); }); save(); render(); return; }
   if(t.dataset.wt){ const w=state.weeks.find(x=>x.id===t.dataset.wt); const v=parseExpr(t.value); if(w&&!Number.isNaN(v)){ w.target=v||0; save(); render(); } return; }
   if(t.dataset.brn){ const br=ROOT.branches.find(x=>x.id===t.dataset.brn); const v=t.value.trim(); if(br&&v){ br.data.settings.branch=v; save(); renderChrome(); } else if(br) t.value=bName(br); return; }
   if(t.dataset.po){ const po=curPO(); if(!po||po.status==='received') return; po[t.dataset.po]=t.value; save(); if(t.dataset.po==='no') render(); return; }
@@ -1660,17 +1663,45 @@ function bomRecipe(m){
   m.lines.forEach(l=>{ const t=bomTarget(l.n); if(!t||!t.id){ missing.push(l.n); return; } acc[t.id]=(acc[t.id]||0)+l.q*t.f; });
   return {rec:Object.entries(acc).map(([id,q])=>({id,q:Math.round(q*1e7)/1e7})),missing};
 }
-function refreshBomRecipes(){ Object.values(state.posMap).forEach(pm=>{ if(pm.bom){ const m=bomMenu(pm.bom); if(m) pm.recipe=bomRecipe(m).rec; } }); }
-const bomOpts = sel => { const g={}; (state.bom.menus||[]).forEach(m=>{ (g[m.group]=g[m.group]||[]).push(m); }); return Object.keys(g).map(k=>`<optgroup label="${esc(k)}">${g[k].map(m=>`<option value="${esc(m.key)}" ${sel===m.key?'selected':''}>${esc(m.name)}</option>`).join('')}</optgroup>`).join(''); };
+function bomFamilies(){
+  const g={}; (state.bom.menus||[]).forEach(m=>{ if(!m.lines.length||m.group==='Beverage'||m.group==='Combo') return; const x=m.name.match(/^(.*?)\s*-\s*(.+)$/); if(!x||/[()+]/.test(x[2])) return; const fam=x[1].trim(), k=bnorm(fam); (g[k]=g[k]||{key:'fam:'+k,label:fam,members:[]}).members.push(m); });
+  return Object.values(g).filter(f=>f.members.length>=2);
+}
+const famGet = key => bomFamilies().find(f=>f.key===key);
+function famWeights(f,mix){ const w=f.members.map(m=>Math.max(0,n0(mix&&mix[m.key]!=null?mix[m.key]:1))); const s=w.reduce((x,y)=>x+y,0)||1; return w.map(x=>x/s); }
+function recipeFor(key,pm){
+  if(!key) return [];
+  if(key.startsWith('fam:')){ const f=famGet(key); if(!f) return []; const wt=famWeights(f,pm&&pm.mix), acc={};
+    f.members.forEach((m,i)=>{ if(!wt[i]) return; bomRecipe(m).rec.forEach(r=>{ acc[r.id]=(acc[r.id]||0)+r.q*wt[i]; }); });
+    return Object.entries(acc).map(([id,q])=>({id,q:Math.round(q*1e7)/1e7})); }
+  return bomRecipe(bomMenu(key)).rec;
+}
+const bomKeyOk = key => !key || (key.startsWith('fam:')?!!famGet(key):!!bomMenu(key));
+function refreshBomRecipes(){ Object.values(state.posMap).forEach(pm=>{ if(pm.bom&&bomKeyOk(pm.bom)) pm.recipe=recipeFor(pm.bom,pm); }); }
+function openMix(name){
+  const pm=pmGet(name), f=famGet(pm.bom); if(!f) return; const wt=famWeights(f,pm.mix);
+  openModal(`<h3>ສັດສ່ວນລົດຊາດ: ${esc(name)}</h3><p class="hint">ເມນູນີ້ຜູກກັບ "${esc(f.label)} — ທຸກລົດຊາດ" (${f.members.length} ລົດຊາດ). ບໍ່ຕ້ອງຕັ້ງສູດແຕ່ລະລົດຊາດ — ໃສ່ສັດສ່ວນທີ່ລູກຄ້າເລືອກໂດຍປະມານ (ລວມບໍ່ຕ້ອງເປັນ 100 ລະບົບປັບໃຫ້). ຖ້າ POS ມີຄໍລຳລົດຊາດ ໃຫ້ເລືອກໃນຂັ້ນນຳເຂົ້າ ແລ້ວລະບົບຈະແຍກລົດຊາດໃຫ້ແທ້.</p><input type="hidden" id="mixName" value="${esc(encodeURIComponent(name))}">
+   ${f.members.map((m,i)=>`<div class="row" style="grid-template-columns:1fr 110px;gap:8px;margin-bottom:8px;align-items:center"><span>${esc(m.name.replace(/^.*?\s*-\s*/,''))}</span><input type="text" inputmode="decimal" data-mixq="${esc(m.key)}" value="${+(wt[i]*100).toFixed(1)}"></div>`).join('')}
+   <div class="mfoot"><button class="btn" data-act="mixEqual">ເທົ່າກັນທຸກລົດຊາດ</button><button class="btn" data-act="closeModal">ຍົກເລີກ</button><button class="btn primary" data-act="mixSave">ບັນທຶກ</button></div>`);
+}
+function saveMix(){
+  const name=decodeURIComponent($('#mixName').value), pm=pmSet(name), mix={}; let s=0;
+  $$('[data-mixq]').forEach(el=>{ const v=parseExpr(el.value)||0; mix[el.dataset.mixq]=Math.max(0,v); s+=Math.max(0,v); });
+  pm.mix=s>0?mix:null; pm.recipe=recipeFor(pm.bom,pm); save(); closeModal(); render(); toast('ບັນທຶກສັດສ່ວນລົດຊາດແລ້ວ');
+}
+const bomOpts = sel => { const fams=bomFamilies(); const fo=fams.length?`<optgroup label="ເລືອກໄດ້ຫຼາຍລົດຊາດ (ບໍ່ຕ້ອງຕັ້ງແຕ່ລະລົດຊາດ)">${fams.map(f=>`<option value="${esc(f.key)}" ${sel===f.key?'selected':''}>${esc(f.label)} — ທຸກລົດຊາດ (${f.members.length})</option>`).join('')}</optgroup>`:''; return fo+bomOptsMenus(sel); };
+const bomOptsMenus = sel => { const g={}; (state.bom.menus||[]).forEach(m=>{ (g[m.group]=g[m.group]||[]).push(m); }); return Object.keys(g).map(k=>`<optgroup label="${esc(k)}">${g[k].map(m=>`<option value="${esc(m.key)}" ${sel===m.key?'selected':''}>${esc(m.name)}</option>`).join('')}</optgroup>`).join(''); };
 function matchBom(name){
   const tk=s=>new Set(bnorm(s).split(' ').filter(x=>x&&!/^(menu|the|and|of)$/.test(x)));
   const A=tk(name); let best=null,bs=0,second=0;
   (state.bom.menus||[]).forEach(m=>{ if(!m.lines.length) return; const B=tk(m.name); let i=0; A.forEach(x=>{ if(B.has(x)) i++; }); const sc=i/(A.size+B.size-i); if(sc>bs){ second=bs; bs=sc; best=m; } else if(sc>second) second=sc; });
-  return best&&bs>=0.75&&bs>second?best.key:'';
+  if(best&&bs>=0.75&&bs>second) return best.key;
+  let fb=null,fs=0; bomFamilies().forEach(f=>{ const B=tk(f.label); let i=0; A.forEach(x=>{ if(B.has(x)) i++; }); const sc=i/(A.size+B.size-i); if(sc>fs){ fs=sc; fb=f; } });
+  return fb&&fs>=0.75?fb.key:'';
 }
 function bomAutoLink(){
   const w=curWeek(); const names=w&&w.pos?Object.keys(w.pos.items):[]; let n=0;
-  names.forEach(nm=>{ const pm=pmSet(nm), k=kindOf(nm,w.pos.items[nm]); if(pm.bom||k==='component'||k==='adjust') return; const m=matchBom(nm); if(m){ pm.bom=m; pm.recipe=bomRecipe(bomMenu(m)).rec; n++; } });
+  names.forEach(nm=>{ const pm=pmSet(nm), k=kindOf(nm,w.pos.items[nm]); if(pm.bom||k==='component'||k==='adjust') return; const m=matchBom(nm); if(m){ pm.bom=m; pm.recipe=recipeFor(m,pm); n++; } });
   save(); render(); toast(n?`ຈັບຄູ່ BOM ໄດ້ ${n} ເມນູ`:'ບໍ່ພົບເມນູທີ່ຈັບຄູ່ໄດ້ — ເລືອກສູດ BOM ເອງໃນຕາຕະລາງ');
 }
 function parseBOM(sheets,fileName){
@@ -1710,7 +1741,7 @@ async function readBOMFile(f){
     if(typeof DecompressionStream==='undefined'){ toast('ເບຣາວເຊີນີ້ບໍ່ຮອງຮັບການອ່ານ Excel'); return; }
     const b=parseBOM(await readXLSX(await f.arrayBuffer()),f.name);
     if(!b.menus.filter(m=>m.lines.length).length){ toast('ບໍ່ພົບສູດ BOM ໃນໄຟລ໌ນີ້'); return; }
-    confirmBox('ນຳເຂົ້າ BOM',`ພົບ ${b.menus.length} ເມນູ (${b.menus.filter(m=>m.lines.length).length} ເມນູມີສູດ). ຈະແທນທີ່ BOM ເດີມຂອງສາຂານີ້ ແລະ ອັບເດດສູດຂອງເມນູ POS ທີ່ຜູກໄວ້.`,()=>{ state.bom=b; Object.values(state.posMap).forEach(pm=>{ if(pm.bom&&!bomMenu(pm.bom)) pm.bom=''; }); refreshBomRecipes(); save(); render(); toast('ນຳເຂົ້າ BOM ແລ້ວ'); },'ນຳເຂົ້າ');
+    confirmBox('ນຳເຂົ້າ BOM',`ພົບ ${b.menus.length} ເມນູ (${b.menus.filter(m=>m.lines.length).length} ເມນູມີສູດ). ຈະແທນທີ່ BOM ເດີມຂອງສາຂານີ້ ແລະ ອັບເດດສູດຂອງເມນູ POS ທີ່ຜູກໄວ້.`,()=>{ state.bom=b; Object.values(state.posMap).forEach(pm=>{ if(pm.bom&&!bomKeyOk(pm.bom)) pm.bom=''; }); refreshBomRecipes(); save(); render(); toast('ນຳເຂົ້າ BOM ແລ້ວ'); },'ນຳເຂົ້າ');
   }catch(e){ console.error(e); toast('ອ່ານໄຟລ໌ BOM ບໍ່ໄດ້'); }
 }
 function useBomSeed(){ confirmBox('ໃຊ້ BOM ມາດຕະຖານ','ຈະແທນທີ່ BOM ຂອງສາຂານີ້ດ້ວຍ BOM ມາດຕະຖານ Potato Corner (5 ກໍລະກົດ 2026).',()=>{ state.bom=JSON.parse(JSON.stringify(BOMSEED)); refreshBomRecipes(); save(); render(); toast('ໃຊ້ BOM ມາດຕະຖານແລ້ວ'); },'ແທນທີ່'); }
@@ -1811,7 +1842,7 @@ function monthTargetCard(A){
 /* ============ ນຳເຂົ້າ POS ============ */
 let POSIMP = null;
 const guessGroup = n => /coke|fanta|sprite|pepsi|water|drink|juice|tea|coffee|soda|ນ້ຳ|ເຄື່ອງດື່ມ/i.test(n)?'bev':'food';
-const pmGet = n => state.posMap[n] || {g:guessGroup(n),line:'',recipe:[],kind:'',parent:'',bom:''};
+const pmGet = n => state.posMap[n] || {g:guessGroup(n),line:'',recipe:[],kind:'',parent:'',bom:'',mix:null};
 function pmSet(n){ return state.posMap[n] || (state.posMap[n]={g:guessGroup(n),line:'',recipe:[],kind:'',parent:'',bom:''}); }
 const fqs = x => (x==null||!isFinite(x))?'':(Math.abs(x)>=0.01?String(Math.round(x*1000)/1000):String(+Number(x).toPrecision(3)));
 const KINDS={normal:'ເມນູຫຼັກ',set:'ເຊັດ / ໂປຣໂມຊັນ',component:'ສ່ວນປະກອບ / ແຖມ (ລາຄາ 0)',adjust:'ປັບຍອດ / ຄືນເງິນ (ຕິດລົບ)'};
@@ -1846,14 +1877,14 @@ function guessHdr(rows){
 function guessMap(hd){
   const find=(...res)=>{ for(const re of res){ const i=hd.findIndex(h=>re.test(String(h))); if(i>=0) return i; } return -1; };
   return {date:find(/date|ວັນທີ|วันที่|day/i), item:find(/item|product|menu|ລາຍການ|ສິນຄ້າ|ເມນູ|เมนู|สินค้า|name|description/i),
-          qty:find(/qty|quantity|ຈຳນວນ|จำนวน|pcs|units|sold|count/i), amt:find(/net|total|amount|sales|revenue|ຍອດ|ມູນຄ່າ|ยอด|รวม/i,/price|ລາຄາ|ราคา/i), disc:find(/discount|promo|ສ່ວນຫຼຸດ|ส่วนลด/i)};
+          qty:find(/qty|quantity|ຈຳນວນ|จำนวน|pcs|units|sold|count/i), amt:find(/net|total|amount|sales|revenue|ຍອດ|ມູນຄ່າ|ยอด|รวม/i,/price|ລາຄາ|ราคา/i), disc:find(/discount|promo|ສ່ວນຫຼຸດ|ส่วนลด/i), flav:find(/flavou?r|modifier|option|variant|ລົດຊາດ|รสชาติ/i)};
 }
 function setPOSImport(file,rows){
   if(!rows.length){ toast('ບໍ່ພົບຂໍ້ມູນໃນໄຟລ໌'); return; }
   const hdr=guessHdr(rows); POSIMP={file,rows,hdr,map:guessMap(rows[hdr]||[]),updateLines:true}; render();
 }
 function posRow(r,m){
-  const name=String(r[m.item]==null?'':r[m.item]).trim(); if(!name || /^(total|sum|grand|ລວມ|รวม)/i.test(name)) return null;
+  let name=String(r[m.item]==null?'':r[m.item]).trim(); if(m.flav>=0){ const fv=String(r[m.flav]==null?'':r[m.flav]).trim(); if(name&&fv) name+=' - '+fv; } if(!name || /^(total|sum|grand|ລວມ|รวม)/i.test(name)) return null;
   return {name,qty:m.qty>=0?numAny(r[m.qty]):1,amt:m.amt>=0?numAny(r[m.amt]):0,disc:m.disc>=0?numAny(r[m.disc]):0,iso:m.date>=0?parseDateAny(r[m.date]):null};
 }
 function posPlan(){
@@ -1876,7 +1907,7 @@ function applyPOS(){
   if(!ids.length){ toast('ບໍ່ມີແຖວທີ່ກົງກັບອາທິດໃດ — ກວດຄໍລຳວັນທີ ແລະ ອາທິດທີ່ເປີດໄວ້'); return; }
   const doIt=()=>{
     ids.forEach(id=>{ const B=plan.by[id], w=B.w; w.pos={file:P.file,at:toISO(new Date()),items:B.items};
-      Object.keys(B.items).forEach(n=>{ const pm=pmSet(n); if(!pm.kind) pm.kind=autoKind(n,B.items[n]); if(!pm.bom&&!(pm.recipe||[]).length&&pm.kind!=='component'&&pm.kind!=='adjust'){ const m=matchBom(n); if(m){ pm.bom=m; pm.recipe=bomRecipe(bomMenu(m)).rec; } } });
+      Object.keys(B.items).forEach(n=>{ const pm=pmSet(n); if(!pm.kind) pm.kind=autoKind(n,B.items[n]); if(!pm.bom&&!(pm.recipe||[]).length&&pm.kind!=='component'&&pm.kind!=='adjust'){ const m=matchBom(n); if(m){ pm.bom=m; pm.recipe=recipeFor(m,pm); } } });
       if(B.hasDays) w.daily=B.days.slice();
       if(P.map.disc>=0) w.sales.discount=B.disc;
       if(P.updateLines) syncLines(w); });
@@ -1950,7 +1981,7 @@ function V_pos(){
       return `<tr><td>${esc(n)}</td><td><select data-pn="${e}" data-p="kind">${Object.keys(KINDS).map(k=>`<option value="${k}" ${kd===k?'selected':''}>${KINDS[k]}</option>`).join('')}</select>${kd==='component'?`<select data-pn="${e}" data-p="parent" title="ຢູ່ໃນເຊັດ">${parentOpts(pm.parent)}</select>`:''}</td><td class="num">${fn(v.q)}</td><td class="num">${fm(v.a)}</td>
       <td><select data-pn="${e}" data-p="g"><option value="food" ${pm.g==='food'?'selected':''}>ອາຫານ</option><option value="bev" ${pm.g==='bev'?'selected':''}>ເຄື່ອງດື່ມ</option><option value="other" ${pm.g==='other'?'selected':''}>ອື່ນໆ</option></select></td>
       <td><select data-pn="${e}" data-p="line">${lineOpts(pm.line)}</select></td>
-      <td style="white-space:normal;min-width:200px"><select data-pn="${e}" data-p="bom" title="ຜູກກັບສູດ BOM" style="max-width:190px"><option value="">— ສູດ BOM —</option>${bomOpts(pm.bom)}</select><br><button class="btn sm" data-act="posRecipe" data-n="${e}">${rc?'ແກ້ສູດ':'+ ໃສ່ສູດ'}</button> <span class="muted" style="font-size:12.5px">${rc||'ຍັງບໍ່ມີສູດ'}</span></td></tr>`; }).join('')}
+      <td style="white-space:normal;min-width:200px"><select data-pn="${e}" data-p="bom" title="ຜູກກັບສູດ BOM" style="max-width:190px"><option value="">— ສູດ BOM —</option>${bomOpts(pm.bom)}</select>${pm.bom&&pm.bom.startsWith('fam:')?` <button class="btn sm" data-act="posMix" data-n="${e}" title="ສັດສ່ວນລົດຊາດ">% ລົດຊາດ${pm.mix?'':' (ເທົ່າກັນ)'}</button>`:''}<br><button class="btn sm" data-act="posRecipe" data-n="${e}">${rc?'ແກ້ສູດ':'+ ໃສ່ສູດ'}</button> <span class="muted" style="font-size:12.5px">${rc||'ຍັງບໍ່ມີສູດ'}</span></td></tr>`; }).join('')}
     </tbody></table></div></div>` : (P?'':`<div class="card muted" style="text-align:center">ຍັງບໍ່ມີຂໍ້ມູນ POS ຂອງ ${esc(weekFull(w))}</div>`);
   return `${lockBanner(w)}<div class="view-title"><div><h2>ນຳເຂົ້າຂໍ້ມູນ POS</h2><p>ດຶງຍອດຂາຍ ແລະ ເມນູທີ່ຂາຍຈາກເຄື່ອງ POS → ໃຊ້ຄຳນວນຕົ້ນທຶນ, ກຳໄລ/ຂາດທຶນ ແລະ ວິເຄາະສາເຫດຕົ້ນທຶນສູງ</p></div></div>${importCard}${w.pos?posPnLCard(w):''}${tbl}`;
 }
@@ -1966,7 +1997,8 @@ function posImportCard(){
     <div><label class="f">ຊື່ເມນູ / ສິນຄ້າ</label><select data-pi="item" style="width:100%">${opts(m.item)}</select></div>
     <div><label class="f">ຈຳນວນຂາຍ</label><select data-pi="qty" style="width:100%">${opts(m.qty)}</select></div>
     <div><label class="f">ຍອດເງິນ (₭)</label><select data-pi="amt" style="width:100%">${opts(m.amt)}</select></div>
-    <div><label class="f">ສ່ວນຫຼຸດ (ຖ້າມີ)</label><select data-pi="disc" style="width:100%">${opts(m.disc)}</select></div></div>
+    <div><label class="f">ສ່ວນຫຼຸດ (ຖ້າມີ)</label><select data-pi="disc" style="width:100%">${opts(m.disc)}</select></div>
+    <div><label class="f">ລົດຊາດ / Modifier (ຖ້າມີ)</label><select data-pi="flav" style="width:100%">${opts(m.flav==null?-1:m.flav)}</select></div></div>
    <label style="display:flex;gap:8px;align-items:center;margin-top:10px;cursor:pointer"><input type="checkbox" data-pi="upd" ${P.updateLines?'checked':''}> ອັບເດດ "ແຖວຍອດຂາຍຕາມສິນຄ້າ" (Fries, Chicken...) ຈາກ POS ດ້ວຍ</label>
    ${m.date<0?'<p class="hint" style="color:var(--warn)">ບໍ່ມີຄໍລຳວັນທີ → ຈະນຳເຂົ້າເປັນຍອດລວມຂອງອາທິດທີ່ກຳລັງເລືອກ (ບໍ່ມີຍອດຂາຍປະຈຳວັນ)</p>':''}
    <div class="sp"></div><div class="tbl-wrap" style="margin:0"><table class="plain"><thead><tr><th>ວັນທີ (ອ່ານໄດ້)</th><th>ເມນູ</th><th>ຈຳນວນ</th><th>ຍອດ</th></tr></thead><tbody>${prev||'<tr><td colspan="4" class="muted">ຍັງບໍ່ໄດ້ເລືອກຄໍລຳ</td></tr>'}</tbody></table></div>
